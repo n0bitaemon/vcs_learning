@@ -5,7 +5,7 @@ edited_files=()
 created_files=()
 deleted_files=()
 
-#Check running with root
+#Kiem tra quyen root
 if [ "$EUID" -ne 0 ]; then
 	echo "Please run as root!"
 	exit

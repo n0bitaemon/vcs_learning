@@ -12,6 +12,7 @@ echo -e "\n[Thong tin o cung]\n"
 df -h --output=source,size,used,avail
 
 echo -e "\n[Danh sach dia chi IP]\n"
+ip addr
 
 echo -e "\n[Danh sach cac user]\n"
 awk -F: '{print $1}' /etc/passwd

@@ -9,9 +9,13 @@ fi
 echo "Running.."
 
 date_exec=$(date --date="5 minutes ago" "+%F %H:%M:%S")
+
+#Lay cac phien dang nhap ssh tu 5 phut truoc
 cur_ssh_str="$(journalctl -u ssh --since="$date_exec" | grep "Accepted password")"
+
 log_file="/var/log/sshmonitor.log"
 messages=()
+mail_content=""
 readarray -t cur_ssh_arr <<< "$cur_ssh_str"
 
 echo -e "[Log sshmonitor - $date_exec]\n" > "$log_file"
@@ -24,6 +28,7 @@ do
 		date_to_show=$(date --date="$date_conn" "+%H:%M:%S %d/%m/%Y")
 		message=$(echo "User" "$(echo "$conn" | awk '{printf $9}')" "dang nhap thanh cong vao thoi gian" "$date_to_show.")
 		messages+=("$message")
+		mail_content="$mail_content$message\n"
 	fi
 done
 if [ "${#messages[@]}" == 0 ]; then
@@ -36,5 +41,13 @@ do
 	echo -e "$message\n" >> "$log_file"
 done
 echo "Updated /var/log/sshmonitor.log."
-sendmail root@localhost "$log_file"
-echo "Email is sent to root@localhost"
+
+if [ -z "$(dpkg -l | grep mailutils)" ]; then
+	echo "mailutils package not found!"
+	exit
+fi
+
+if [ "$mail_content" != "" ]; then
+	echo -e "$mail_content" | mail -s "[Log sshmonitor - $date_exec]" root@localhost
+	echo "Email is sent to root@localhost"
+fi
