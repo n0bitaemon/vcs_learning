@@ -2,11 +2,11 @@
 
 #Kiem tra quyen root
 if [ "$EUID" -ne 0 ]; then
-	echo "Please run as root!"
+	echo "Ban can co quyen root!"
 	exit
 fi
 
-echo "Running.."
+echo "Chuong trinh dang chay.."
 
 date_exec=$(date --date="5 minutes ago" "+%F %H:%M:%S")
 
@@ -40,14 +40,14 @@ for message in "${messages[@]}"
 do
 	echo -e "$message\n" >> "$log_file"
 done
-echo "Updated /var/log/sshmonitor.log."
+echo "Da cap nhat /var/log/sshmonitor.log."
 
 if [ -z "$(dpkg -l | grep mailutils)" ]; then
-	echo "mailutils package not found!"
+	echo "Khong tim thay package mailutils!"
 	exit
 fi
 
 if [ "$mail_content" != "" ]; then
 	echo -e "$mail_content" | mail -s "[Log sshmonitor - $date_exec]" root@localhost
-	echo "Email is sent to root@localhost"
+	echo "Da gui email toi root@localhost"
 fi

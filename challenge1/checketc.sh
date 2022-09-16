@@ -7,18 +7,18 @@ deleted_files=()
 
 #Kiem tra quyen root
 if [ "$EUID" -ne 0 ]; then
-	echo "Please run as root!"
+	echo "Ban can co quyen root!"
 	exit
 fi
 
 #Kiem tra $backup_file da duoc tao chua
 if [ ! -e "$backup_file" ]; then
 	echo "$(find /etc -type f)" > "$backup_file"
-	echo -e "First run, file $backup_file created.\nExit the program.."
+	echo -e "Chay lan dau tien, file $backup_file duoc tao.\nThoat chuong trinh.."
 	exit
 fi
 
-echo "Running.."
+echo "Chuong trinh dang chay.."
 
 #Tim cac file chinh sua lan cuoi tu 30 phut truoc va gan vao $cur_modified
 readarray -t cur_modified <<< "$(find /etc -type f -mmin -30)"
@@ -68,8 +68,8 @@ do
 	echo -e "$file \n" >> "$log_file"
 done
 
-echo "Updated $log_file."
+echo "Da cap nhat $log_file."
 
 #Update $backup_file
 echo "$(find /etc -type f)" > "$backup_file"
-echo "Updated $backup_file."
+echo "Da cap nhat $backup_file."
