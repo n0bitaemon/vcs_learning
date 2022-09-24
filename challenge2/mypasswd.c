@@ -14,8 +14,8 @@
 int main(){
 	FILE *fp_read = NULL, *fp_write = NULL;
 	struct spwd *sp = NULL, *sp_entry = NULL;
-	struct passwd *p = NULL;
-	struct stat st_shadow;
+	struct passwd *p = NULL; /*User's information*/
+	struct stat st_shadow; /*Shadow metadata*/
 	char *old_pwd = NULL, *new_pwd = NULL, *re_pwd = NULL, *encrypted = NULL;
 
 	p = getpwuid(getuid());
@@ -24,6 +24,7 @@ int main(){
 		exit(1);
 	}
 
+	/*Old password validation*/
 	sp_entry = getspnam(p->pw_name);
 	old_pwd = strdup(getpass("Old password: "));
 	encrypted = crypt(old_pwd, sp_entry->sp_pwdp);
@@ -32,6 +33,8 @@ int main(){
 		printf("mypasswd: password unchanged\n");
 		exit(2);
 	}
+
+	/*New password validation*/
 	new_pwd = strdup(getpass("New password: "));
 	re_pwd = strdup(getpass("Retype password: "));
 	if(strcmp(new_pwd, re_pwd) != 0){
@@ -45,12 +48,14 @@ int main(){
 		exit(5);
 	}
 
+	/*Open read stream, write stream*/
 	if(!(fp_read = fopen(_PATH_SHADOW, "r")) 
 		|| !(fp_write = fopen(_PATH_SHADOW_TEMP, "w"))){
 		printf("an error occured, try again\n");
 		exit(6);
 	}
 
+	/*Write to _FILE_SHADOW_TEMP*/
 	while((sp = fgetspent(fp_read)) != (struct spwd *)0){
 		if(strcmp(sp_entry->sp_namp, sp->sp_namp) == 0 
 			&& strcmp(sp_entry->sp_pwdp, sp->sp_pwdp) == 0)
@@ -59,6 +64,8 @@ int main(){
 	}
 	fclose(fp_read);
 	fclose(fp_write);
+
+	/*Copy shadow metadata*/
 	stat(_PATH_SHADOW, &st_shadow);
 	if(chown(_PATH_SHADOW_TEMP, st_shadow.st_uid, st_shadow.st_gid) != 0
 		|| chmod(_PATH_SHADOW_TEMP, st_shadow.st_mode) != 0){
@@ -66,6 +73,7 @@ int main(){
 		exit(7);
 	}
 
+	/*Convert shadow file*/
 	if(rename(_PATH_SHADOW, _PATH_SHADOW_BACKUP) != 0 
 		|| rename(_PATH_SHADOW_TEMP, _PATH_SHADOW) != 0){
 		printf("an error occured, try again\n");
