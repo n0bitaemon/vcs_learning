@@ -1,6 +1,6 @@
 import socket
 import re
-import magic
+import mimetypes
 import os
 import sys
 import getopt
@@ -40,11 +40,13 @@ def get_auth_cookies(username, password, host, port):
                 res += data.decode()
     except socket.error:
         print("Cannot connect to %s/wp-login.php" % host)
+        print("Upload failed")
         exit(1)
     
     #Login fails
     if(not "Location: http://blogtest.vnprogramming.com/wp-admin/" in res):
         print("Wrong username or password")
+        print("Upload failed")
         exit(6)
 
     auth_cookies = ""
@@ -78,6 +80,7 @@ def get_wpnonce(auth_cookies, host, port):
                 res += data.decode()
     except socket.error:
         print("Cannot connect to %s/wp-admin/upload.php" % host)
+        print("Upload failed")
         exit(2)
 
     #Search for _wpnonce value
@@ -97,10 +100,11 @@ def upload_file(path, auth_cookies, _wpnonce, host, port):
                 content += bytes_read
     except:
         print("Cannot open file with given path")
+        print("Upload failed")
         exit(5)
     
     #Get mime type of the file
-    mime_type = magic.Magic(mime=True).from_file(path)
+    mime_type = mimetypes.MimeTypes().guess_type(path)
     filename = os.path.basename(path).split('/')[-1]
 
     #Construct body
@@ -174,6 +178,7 @@ try:
     opts, args = getopt.getopt(argv, "u:a:p:f:", ["url=", "user=", "password=", "local-file="])
 except:
     print("Unexpected error")
+    print("Upload failed")
     exit(1);
 
 for opt, arg in opts:
@@ -187,6 +192,7 @@ for opt, arg in opts:
         path = arg
 if not (host and usr and pwd and path):
     print("Invalid parameters")
+    print("Upload failed")
     exit(2)
 
 auth_cookies = get_auth_cookies(usr, pwd, host, port)
