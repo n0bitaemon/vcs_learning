@@ -1,51 +1,55 @@
-#!/usr/bin/env python3
-
 import socket
 import re
 import html
 import sys
 import getopt
+from urllib.parse import urlparse
 
-PORT = 80
-ENCODING = "utf-8"
-HOST = "blogtest.vnprogramming.com"
+port = 80
+host = None
 
-#Set --url argument value to HOST
+#Set host
 argv = sys.argv[1:]
 try:
     opts, args = getopt.getopt(argv, "u:", ["url="])
 except:
-    print("Unexpected error")
+    print("Syntax error")
     exit(1);
-
-if(len(opts) == 0):
-    print("No --url parameter specified")
-    exit(2)
 
 for opt, arg in opts:
     if opt in ["-u", "--url"]:
-        HOST = arg
+        host = urlparse(arg).hostname
+
+if not host:
+    print("Invalid parameters")
+    exit(2)
 
 headers = """
 GET / HTTP/1.1\r
 Host: {host}\r
 Connection: close\r
-\r\n""".format(host=HOST)
+\r\n""".format(host=host)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((HOST, PORT))
-s.sendall(headers.encode())
 content = ""
-while True:
-    data = s.recv(1024)
-    if(len(data) < 1):
-        break
-    content += data.decode()
-s.close()
+try: 
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, port))
+        s.sendall(headers.encode())
 
+        #Get response
+        while True:
+            data = s.recv(1024)
+            if(len(data) < 1):
+                break
+            content += data.decode()
+except socket.error:
+    print("Cannot connect to", host)
+    exit(3)
+
+#Search for title
 try:
     title = re.search(r"<title>(.*?)</title>", content).group(1)
     print(html.unescape(title))
 except:
-    print("Cannot get title of the webpage")
-    exit(2)
+    print("The website has no title")
+    exit(4)
