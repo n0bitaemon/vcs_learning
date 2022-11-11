@@ -14,4 +14,4 @@ Sau một thời gian, ta thấy duy chỉ có một request trả về HTTP sta
 
 ![image](https://user-images.githubusercontent.com/103978452/201254167-723b905a-0290-4767-a0cf-fe642288c92e.png)
 
-Tiến hành decode base64 và decrypt md5, ta thu được username=carlos và password=soccer. Sử dụng thông tin thu được để đăng nhập, kết quả thành công.
+Tiến hành decode base64 và search chuỗi md5 trên md5online.org, ta thu được username=carlos và password=soccer. Sử dụng thông tin thu được để đăng nhập, kết quả thành công.
