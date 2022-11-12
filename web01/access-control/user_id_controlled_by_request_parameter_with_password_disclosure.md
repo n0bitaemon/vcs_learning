@@ -7,3 +7,4 @@ Như vậy, để xóa user carlos thì ta cần biết id của admin là gì.
 
 Sau một vài lần thử, ta đoán được id=administrator trỏ đến profile của admin. Dùng dev tool để lấy mật khẩu của administrator rồi đăng nhập, xóa user carlos, ta được kết quả thành công
 
+![image](https://user-images.githubusercontent.com/103978452/201451962-16c2f92f-5b14-4118-a1de-2cad197793c7.png)
