@@ -28,7 +28,7 @@ Ta thử upload file payload.php với nội dung
 ```
 rồi truy cập `/files/avatars/payload.php` thì thấy nội dung file được hiển thị thay vì được execute. Ta sẽ thử upload file payload.php vào các folder khác sử dụng kĩ thuật directory traversal.
 
-Trong tab Repeater của BurpSuite,ta thấy POST request đến /my-account/avatar như sau:
+Trong tab Repeater của BurpSuite, ta thấy POST request đến `/my-account/avatar` có nội dung như sau:
 
 ![image](https://user-images.githubusercontent.com/103978452/202960724-6834b606-d122-43ba-8f10-b716b5a1f5f9.png)
 
