@@ -34,7 +34,7 @@ Trong tab Repeater của BurpSuite, ta thấy POST request đến `/my-account/a
 
 Thay đổi `filename="../payload.php"`, kết quả trả về `The file avatars/payload.php has been uploaded`. Thử với các relative path, absolute path khác cũng có kết quả tương tự. Như vậy có thể server lọc ra filename trước rồi mới upload.
 
-Thử dùng URL encode, thay `filename="%2E%2E%2F%70%61%79%6C%6F%61%64%2E%70%68%70"` (tương ứng `payload="../payload.php sau khi decode) thì thấy kết quả trả về thành công
+Thử dùng URL encode, thay `filename="%2E%2E%2F%70%61%79%6C%6F%61%64%2E%70%68%70"` (tương ứng `payload="../payload.php` sau khi decode) thì thấy kết quả trả về thành công
 
 ![image](https://user-images.githubusercontent.com/103978452/202961066-81908b20-efee-4af1-8076-2c0754a00c5b.png)
 
