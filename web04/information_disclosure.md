@@ -12,3 +12,13 @@ Truy cập `/cgi-bin/phpinfo.php`, ta thấy trang thông tin về version php �
 
 # 3. Authentication bypass via information disclosure
 Truy cập `GET /admin`, thông báo `Admin interface only available to local users` xuất hiện. Như vậy ta sẽ thử fake local IP address để bypass.
+
+Thay đổi method GET thành TRACE, ta thấy trong response có trả về `X-Custom-IP-Authorization: 27.72.58.160`
+
+![image](https://user-images.githubusercontent.com/103978452/204488829-d1dda0f8-5c9f-4989-8255-034e0ba36ff1.png)
+
+Thử thay đổi header trên bằng cách thêm `X-Custom-IP-Authorization: 127.0.0.1` trong request. Kết quả trả về trang admin thành công. Như vậy ta truy cập `GET /admin/delete?username=carlos` với header như trên, và user carlos được xóa thành công.
+
+![image](https://user-images.githubusercontent.com/103978452/204489686-83a92399-161a-42dc-ba5c-76087e9c9e92.png)
+
+# 4.
