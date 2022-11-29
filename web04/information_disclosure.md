@@ -10,3 +10,5 @@ Dùng chức năng "View Page Source" của trình duyệt, ta thấy có một 
 ```
 Truy cập `/cgi-bin/phpinfo.php`, ta thấy trang thông tin về version php đang sử dụng được hiển thị. Dòng `SECRET_KEY` có value là `z9k2d4u63wdrwb5x7dp4swyfk7eu54pf`
 
+# 3. Authentication bypass via information disclosure
+Truy cập `GET /admin`, thông báo `Admin interface only available to local users` xuất hiện. Như vậy ta sẽ thử fake local IP address để bypass.
