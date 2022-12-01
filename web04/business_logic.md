@@ -38,8 +38,25 @@ Vào trang admin và xóa user carlos, kết quả thành công.
 # 6. Inconsistent handling of exceptional input
 
 # 7. Weak isolation on dual-use endpoint
+Trong trang "My Account" có chức năng đổi mật khẩu. Dùng BurpSuite để intercept request, sau đó đặt username=administrator và xóa đi trường current-password. Kết quả, password đã được đổi thành công.
+
+![image](https://user-images.githubusercontent.com/103978452/204959770-a011f04b-0588-4aa2-ae2d-887f885781ac.png)
+
+Dùng password mới để đăng nhập với tư cách administrator và xóa user carlos, kết quả thành công.
 
 # 8. Insufficient workflow validation
+Dùng Burp Repeater để intercept request, ta thấy trình tự của chức năng mua hàng như sau:
+1) Người dùng thêm hàng vào giỏ: `POST /cart`
+2) Click "Place Order" để đặt hàng: `POST /cart/checkout`
+3) Xác nhận mua hàng: `GET /cart/order-confirmation?order-confirmation=true`
+
+Như vậy, ta sẽ thử thực hiện mua hàng theo một thứ tự khác. 
+1) Đưa sản phẩm "Six Pack Beer Belt" giá $39.03 vào giỏ (bước 1)
+2) Thực hiện đặt hàng (bước 2).
+3) Đưa sản phẩm "Lightweight "l33t" Leather Jacket" vào giỏ (bước 1)
+4) Xác nhận đặt hàng (bước 2)
+
+Kết quả, bài lab được giải thành công.
 
 # 9. Authentication bypass via flawed state machine
 
