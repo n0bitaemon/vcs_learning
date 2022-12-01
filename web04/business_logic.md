@@ -59,6 +59,16 @@ Như vậy, ta sẽ thử thực hiện mua hàng theo một thứ tự khác.
 Kết quả, bài lab được giải thành công.
 
 # 9. Authentication bypass via flawed state machine
+Ta thấy trình tự đăng nhập như sau:
+1) Đăng nhập: `GET /login` => `POST /login`
+2) Chọn role: `GET /role-selector` => `POST /role-selector`
+3) Truy cập Home
+
+Ta thử thực hiện việc login bằng trình tự như sau (bỏ qua việc chọn role):
+1) Đăng nhập (bước 1)
+2) Truy cập Home
+
+Trong trang Home có hiển thị menu "Admin panel". Như vậy role của ta sẽ mặc định là administrator. Truy cập trang Admin và xóa user carlos, kết quả thành công.
 
 # 10. Infinite money logic flaw
 
