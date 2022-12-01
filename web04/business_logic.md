@@ -30,3 +30,19 @@ Trong trang 'My Account', có chức năng thay đổi email. Ta thay đổi ema
 ![image](https://user-images.githubusercontent.com/103978452/204931324-edfef2ea-ab7f-453a-9a64-2e33133cadb0.png)
 
 Vào trang admin và xóa user carlos, kết quả thành công.
+
+# 4. Flawed enforcement of business rules
+
+# 5. Low-level logic flaw
+
+# 6. Inconsistent handling of exceptional input
+
+# 7. Weak isolation on dual-use endpoint
+
+# 8. Insufficient workflow validation
+
+# 9. Authentication bypass via flawed state machine
+
+# 10. Infinite money logic flaw
+
+# 11. Authentication bypass via encryption oracle
