@@ -34,6 +34,19 @@ Vào trang admin và xóa user carlos, kết quả thành công.
 # 4. Flawed enforcement of business rules
 
 # 5. Low-level logic flaw
+Ta thấy số lượng đơn hàng không thể là số âm. Như vậy ta sẽ thử tăng số lượng lên thật lớn để kiểm tra, nếu quá giới hạn thì chuyện gì sẽ xảy ra.
+
+Chuyển request `POST /cart` vào Intruder với body như sau:
+```
+productId=1&redir=PRODUCT&quantity=99
+```
+Thực hiện tăng liên tục số lượng sản phẩm bằng cách sử dụng Null payloads. Sau một thời gian, ta thấy tổng tiền phải trả đạt giới hạn rồi chuyển thành một số âm rất nhỏ
+
+![image](https://user-images.githubusercontent.com/103978452/205054446-7461976a-46b3-47a8-a63d-7da78ef2d147.png)
+
+Tiếp tục tăng số lượng sản phẩm lên đến gần 0, sau đó dừng Intruder lại và thêm một vài sản phẩm sao cho tổng tiền nhỏ hơn $100. Sau đó click "Place Order", kết quả thành công.
+
+![image](https://user-images.githubusercontent.com/103978452/205059962-30f8a882-2eb2-4458-af4f-2e8ce1a9926e.png)
 
 # 6. Inconsistent handling of exceptional input
 
