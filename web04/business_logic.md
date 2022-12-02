@@ -32,6 +32,11 @@ Trong trang 'My Account', có chức năng thay đổi email. Ta thay đổi ema
 Vào trang admin và xóa user carlos, kết quả thành công.
 
 # 4. Flawed enforcement of business rules
+Ta thấy ở phía dưới trang "Home" có chức năng nhận thư qua email. Sau khi nhập email, ta có được coupon SIGNUP30 cho phép giảm tổng tiền phải trả 30%.
+
+Ta để ý rằng không thể 1 coupon 2 lần liên tiếp, sẽ hiểu thị lỗi "Coupon already applied". Tuy nhiên khi ta luân phiên nhập các coupon SIGNUP30 và NEWCUST5 thì lại thành công. Thực hiện như vậy 1 vài lần, ta đưa tổng tiền phải trả trở về $0.00. Sau đó click "Place order", kết quả thành công.
+
+![image](https://user-images.githubusercontent.com/103978452/205235665-de90b0c5-3e3c-4f0b-a636-f64002b0c613.png)
 
 # 5. Low-level logic flaw
 Ta thấy số lượng đơn hàng không thể là số âm. Như vậy ta sẽ thử tăng số lượng lên thật lớn để kiểm tra, nếu quá giới hạn thì chuyện gì sẽ xảy ra.
@@ -96,7 +101,7 @@ Ta thấy trình tự đăng nhập như sau:
 
 Ta thử thực hiện việc login bằng trình tự như sau (bỏ qua việc chọn role):
 1) Đăng nhập (bước 1)
-2) Truy cập Home
+2) Truy cập Home (bước 3)
 
 Trong trang Home có hiển thị menu "Admin panel". Như vậy role của ta sẽ mặc định là administrator. Truy cập trang Admin và xóa user carlos, kết quả thành công.
 
