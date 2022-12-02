@@ -49,6 +49,19 @@ Tiếp tục tăng số lượng sản phẩm lên đến gần 0, sau đó dừ
 ![image](https://user-images.githubusercontent.com/103978452/205059962-30f8a882-2eb2-4458-af4f-2e8ce1a9926e.png)
 
 # 6. Inconsistent handling of exceptional input
+Ta thấy để vào trang admin, cần phải có email với domain là "dontwannacry.com".
+
+Dùng Burp Repeater để bắt request `POST /register`, sau đó chỉnh sửa email có độ dài thật lớn (khoảng vài trăm ký tự). Sau khi vào email client để xác thực tài khoản, ta tiến hành đăng nhập. Tại trang "My acccount", ta thấy email đã bị cắt đi chỉ còn 255 ký tự
+
+![image](https://user-images.githubusercontent.com/103978452/205214644-9c86001a-8e46-4395-baf3-35887dceb3dd.png)
+
+Ta chỉnh sửa request `POST /register` như sau:
+```
+csrf=5hZVO5h4P2LgB7wXU9aqS1gpiTCKw1vD&username=dekisugi&email=dekisugi@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.dontwannacry.com.exploit-0a65002404d424e5c05519a301ef0008.exploit-server.net&password=nomatter
+```
+Như vậy, email sẽ bị cắt đi chỉ còn 255 ký tự, tức là đến hết phần "dontwannacry.com", trong khi đó email yêu cầu xác thực tài khoản vẫn được gửi về email client của chúng ta.
+
+Xác thực và đăng nhập, ta thấy menu "Admin panel" đã hiển thị. Truy cập /admin và xóa user carlos, kết quả thành công.
 
 # 7. Weak isolation on dual-use endpoint
 Trong trang "My Account" có chức năng đổi mật khẩu. Dùng BurpSuite để intercept request, sau đó đặt username=administrator và xóa đi trường current-password. Kết quả, password đã được đổi thành công.
@@ -56,6 +69,8 @@ Trong trang "My Account" có chức năng đổi mật khẩu. Dùng BurpSuite �
 ![image](https://user-images.githubusercontent.com/103978452/204959770-a011f04b-0588-4aa2-ae2d-887f885781ac.png)
 
 Dùng password mới để đăng nhập với tư cách administrator và xóa user carlos, kết quả thành công.
+
+![image](https://user-images.githubusercontent.com/103978452/205215067-8da84ef2-dfda-4fe5-a3ad-dfba69b530c4.png)
 
 # 8. Insufficient workflow validation
 Dùng Burp Repeater để intercept request, ta thấy trình tự của chức năng mua hàng như sau:
