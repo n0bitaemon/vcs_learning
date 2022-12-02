@@ -115,6 +115,6 @@ Quy trình exploit:
 4) Xác nhận đặt hàng: `GET /cart/order-confirmation?order-confirmed=true`
 5) Nhập gift-card: `POST /gift-card`, trong đó gift-card được lấy từ response của bước 4
 
-Ta có thể sử dụng chức năng Macros và Session Handling Rules trong tab Sessions để thực hiện gửi đi nhiều request. Cấu hình macros và rules tương ứng rồi dùng Repeater để thực thi chuỗi requests này đến khi đạt đủ số tiền cần thiết, sau đó mua sản phẩm "Lightweight "l33t" Leather Jacket", kết quả thành công.
+Ta có thể sử dụng chức năng Macros và Session Handling Rules trong tab Sessions để thực hiện gửi đi nhiều request. Cấu hình macros và rules tương ứng rồi dùng Intruder để thực thi chuỗi requests này đến khi đạt đủ số tiền cần thiết, sau đó mua sản phẩm "Lightweight "l33t" Leather Jacket", kết quả thành công.
 
 # 11. Authentication bypass via encryption oracle
