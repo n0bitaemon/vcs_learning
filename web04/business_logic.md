@@ -106,5 +106,15 @@ Ta thử thực hiện việc login bằng trình tự như sau (bỏ qua việc
 Trong trang Home có hiển thị menu "Admin panel". Như vậy role của ta sẽ mặc định là administrator. Truy cập trang Admin và xóa user carlos, kết quả thành công.
 
 # 10. Infinite money logic flaw
+Ta thấy trong trang "Home" có sản phẩm "Gift card" được bán với giá $10.00, sau khi sử dụng ta nhận lại được $10.00. Nếu sử dụng coupon SIGNUP30 thì giá phải trả chỉ còn $7.00, trong khi bán đi vẫn được $10.00. Như vậy nếu lặp lại quy trình mua-bán này liên tục, ta có thể kiếm ra số tiền không giới hạn.
+
+Quy trình exploit:
+1) Cho sản phầm vào giỏ: `POST /cart`
+2) Sử dụng coupon: `POST /cart/coupon`
+3) Đặt hàng: `POST /cart/checkout`
+4) Xác nhận đặt hàng: `GET /cart/order-confirmation?order-confirmed=true`
+5) Nhập gift-card: `POST /gift-card`, trong đó gift-card được lấy từ response của bước 4
+
+Ta có thể sử dụng chức năng Macros và Session Handling Rules trong tab Sessions để thực hiện gửi đi nhiều request. Cấu hình macros và rules tương ứng rồi dùng Repeater để thực thi chuỗi requests này đến khi đạt đủ số tiền cần thiết, sau đó mua sản phẩm "Lightweight "l33t" Leather Jacket", kết quả thành công.
 
 # 11. Authentication bypass via encryption oracle
