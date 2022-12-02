@@ -61,6 +61,8 @@ csrf=5hZVO5h4P2LgB7wXU9aqS1gpiTCKw1vD&username=dekisugi&email=dekisugi@aaaaaaaaa
 ```
 Như vậy, email sẽ bị cắt đi chỉ còn 255 ký tự, tức là đến hết phần "dontwannacry.com", trong khi đó email yêu cầu xác thực tài khoản vẫn được gửi về email client của chúng ta.
 
+![image](https://user-images.githubusercontent.com/103978452/205215289-8a93d6ee-4db5-46e0-8f30-4b37c939ae1d.png)
+
 Xác thực và đăng nhập, ta thấy menu "Admin panel" đã hiển thị. Truy cập /admin và xóa user carlos, kết quả thành công.
 
 # 7. Weak isolation on dual-use endpoint
