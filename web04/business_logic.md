@@ -118,3 +118,24 @@ Quy trình exploit:
 Ta có thể sử dụng chức năng Macros và Session Handling Rules trong tab Sessions để thực hiện gửi đi nhiều request. Cấu hình macros và rules tương ứng rồi dùng Intruder để thực thi chuỗi requests này đến khi đạt đủ số tiền cần thiết, sau đó mua sản phẩm "Lightweight "l33t" Leather Jacket", kết quả thành công.
 
 # 11. Authentication bypass via encryption oracle
+Nhận thấy rằng khi khi đăng nhập với chức năng "Stay logged in", nếu có cookie `stay-logged-in` mà không có session thì ta vẫn đăng nhập được.
+
+Trong trang "My account", ta thấy khi nhập một invalid email thì thông báo "Invalid email address: <invalid-email>" sẽ được hiển thị, cùng với đó một cookie là `notification` với dữ liệu được encrypted được thiết lập. Ta giả sử rằng dòng thông báo lỗi trên chính là giá trị của cookie `notification` sau khi được decrypt.
+  
+![image](https://user-images.githubusercontent.com/103978452/205499913-8e696b1e-9b71-462e-80fe-920a9933e000.png)
+  
+Thử copy và paste value của cookie `stay-logged-in` vào trong cookie `notification`, ta thấy thông báo lỗi được hiển thị là: `wiener:1670167212682`, trong đó 1670167212682 chính là timestampt khi ta login
+ 
+![image](https://user-images.githubusercontent.com/103978452/205499065-4a0b7b90-8be1-4539-bb6c-a52a596d4f4f.png)
+
+Như vậy ta có thể encrypt và decrypt một dữ liệu bất kỳ bằng cách:
+1) Encrypt: Đặt input vào trường email sau đó submit => value của cookie `notification` chính là dữ liệu được encrypt của chuỗi "Invalid email address: <input>"
+2) Decrypt: Đặt input thành giá trị của cookie `notification` trong trang "My-account", sau đó refresh. Thông báo lỗi chính là giá trị của input sau khi decrypt
+  
+Tiến hành encrypt `administrator:1670167212682` rồi đưa vào Decoder. Thực hiện decode URL và base64, sau đó xóa 23 bytes đầu của chuỗi hex thu được (tương ứng "Invalid email address: "), rồi encode trở lại. Thử gán giá trị thu được vào cookie `notification`, ta thu được lỗi "Input length must be multiple of 16 when decrypting with padded cipher"
+  
+Như vậy số bytes xóa đi cần phải là bội của 16. Do chuỗi "Invalid email address: " có 32 bytes, nên ta thêm "xxxxxxxxx" vào trước email address. Tiến hành encrypt `xxxxxxxxxadministrator:1670167212682`, sau đó decode, xóa 32 byte rồi encode trở lại. Sau khi đổi giá trị của cookie, ta thu được giá tị mong muốn
+  
+![image](https://user-images.githubusercontent.com/103978452/205499797-22468dad-f2fc-435d-bd7b-9cbdadf2f4ae.png)
+
+Copy giá trị từ cookie `notification` sang `stay-logged-in` và xóa cookie session rồi refresh, ta thấy ta đã đăng nhập với tư các administrator. Vào trang "Admin panel" rồi xóa user carlos, kết quả thành công.
