@@ -138,4 +138,4 @@ Như vậy số bytes xóa đi cần phải là bội của 16. Do chuỗi "Inva
   
 ![image](https://user-images.githubusercontent.com/103978452/205499797-22468dad-f2fc-435d-bd7b-9cbdadf2f4ae.png)
 
-Copy giá trị từ cookie `notification` sang `stay-logged-in` và xóa cookie session rồi refresh, ta thấy ta đã đăng nhập với tư các administrator. Vào trang "Admin panel" rồi xóa user carlos, kết quả thành công.
+Copy giá trị từ cookie `notification` sang `stay-logged-in` và xóa cookie session rồi refresh, ta thấy ta đã đăng nhập với tư cách administrator. Vào trang "Admin panel" rồi xóa user carlos, kết quả thành công.
