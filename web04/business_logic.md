@@ -134,7 +134,7 @@ Như vậy ta có thể encrypt và decrypt một dữ liệu bất kỳ bằng 
   
 Tiến hành encrypt `administrator:1670167212682` rồi đưa vào Decoder. Thực hiện decode URL và base64, sau đó xóa 23 bytes đầu của chuỗi hex thu được (tương ứng "Invalid email address: "), rồi encode trở lại. Thử gán giá trị thu được vào cookie `notification`, ta thu được lỗi "Input length must be multiple of 16 when decrypting with padded cipher"
   
-Như vậy số bytes xóa đi cần phải là bội của 16. Do chuỗi "Invalid email address: " có 32 bytes, nên ta thêm "xxxxxxxxx" vào trước email address. Tiến hành encrypt `xxxxxxxxxadministrator:1670167212682`, sau đó decode, xóa 32 byte rồi encode trở lại. Sau khi đổi giá trị của cookie, ta thu được giá tị mong muốn
+Như vậy số bytes xóa đi cần phải là bội của 16. Do chuỗi "Invalid email address: " có 32 bytes, nên ta thêm "xxxxxxxxx" vào trước email address. Tiến hành encrypt `xxxxxxxxxadministrator:1670167212682`, sau đó decode, xóa 32 byte rồi encode trở lại. Sau khi đổi giá trị của cookie, ta thu được giá trị mong muốn
   
 ![image](https://user-images.githubusercontent.com/103978452/205499797-22468dad-f2fc-435d-bd7b-9cbdadf2f4ae.png)
 
