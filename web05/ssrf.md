@@ -41,6 +41,17 @@ Trong request `GET /product?productId=2`, ta thay đổi header Refererer trỏ 
 ![image](https://user-images.githubusercontent.com/103978452/205568329-61e71132-5286-4bec-a560-855a51002781.png)
 
 # 6. SSRF with whitelist-based input filter
+Ta sẽ thay đổi biến stockApi trong request `POST /product/stock` để tìm cách bypass và exploit ssrf.
+
+Thử với URL "http://hello@stock.weliketoshop.net:8080/product/stock/check?productId=2&storeId=1", kết quả trả về domain hợp lệ.
+
+Thử với URL "http://hello%2523@stock.weliketoshop.net:8080/product/stock/check?productId=2&storeId=1" (double url encode kí tự "#" thành "%2523"), kết quả trả về lỗi 505 Internal Server Error. Như vậy có thể server đã truy cập đến domain là "hello".
+
+Thử với URL "http://localhost:80%2523@stock.weliketoshop.net:8080/admin", kết quả trả về trang admin thành công.
+
+Ta thay URL thành "http://localhost:80%2523@stock.weliketoshop.net:8080/admin/delete?username=carlos" để giải bài lab.
+
+![image](https://user-images.githubusercontent.com/103978452/207007466-a7353e87-fee1-465c-9a60-d4543510d4af.png)
 
 # 7. Blind SSRF with Shellshock exploitation
 Khi thay đổi Referrer trong request `/product?productId=1` thành địa chỉ của Burp Collaborator, nhận thấy request được gửi đến. Như vậy server sẽ truy cập địa chỉ có trong header Referrer.
