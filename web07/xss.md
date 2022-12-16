@@ -40,7 +40,7 @@ Nếu ta đặt chuỗi hash thành `#<img src=1 onerror=alert(1)>` thì đoạn
 ```
 var post = $('section.blog-list h2:contains(<img src=1 onerror=alert(1)>)');
 ```
-Khi đó tag <script> sẽ bị escape và lệnh alert được thực thi. Thử submit, kết quả đúng như mong muốn.
+Khi đó tag `<script>` sẽ bị escape và lệnh alert được thực thi. Thử submit, kết quả đúng như mong muốn.
 
 Vào exploit server, cấu hình đoạn code sau:
 ```
