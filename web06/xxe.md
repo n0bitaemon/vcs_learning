@@ -156,3 +156,4 @@ Sử dụng đoạn DTD sau làm payload:
 
 ![image](https://user-images.githubusercontent.com/103978452/208043930-6ef05ad2-3856-4ee8-a8f5-4e949701b2b5.png)
 
+Gửi request, bài lab được giải.
