@@ -65,12 +65,29 @@ Ta thấy trong website attribute dấu nháy kép đã bị encode để vô hi
 Kết quả, bài lab được giải thành công.
     
 # 9. Reflected XSS into a JavaScript string with angle brackets HTML encoded
+Ta thấy cả dấu đóng mở tag và dấu nháy kép đã bị encoded, tuy nhiên dấu nháy đơn thì không.
+
+Đoạn script như sau:
+![image](https://user-images.githubusercontent.com/103978452/208208780-a249f412-2603-490b-8aa5-c8dbbc4e1c53.png)
+Như vậy, nếu ta search với từ khóa `';alert(1);x='a`, đoạn code sẽ trở thành `var searchTerms ='';alert(1);x='a';`. Khi đó, lệnh alert sẽ được thực thi
+
+Thử với cách làm trên, kết quả thành công.
 
 # 10. DOM XSS in `document.write` sink using source `location.search` inside a select element
+Trong trang website thông tin chi tiết về 1 sản phẩm, có đoạn script sau
+
+![image](https://user-images.githubusercontent.com/103978452/208209503-988c1e56-28af-4efb-86b3-2b58eaf1188c.png)
+Như vậy khi trong Query string có biến `storeId=abc`, thì đoạn text `abc` sẽ được thêm vào website.
+
+Ta thay đổi query string thành `?productId=1&storeId=<script>alert(1)</script>`, kết quả lệnh alert được thực thi thành công.
 
 # 11. DOM XSS in AngularJS expression with angle brackets and double quotes HTML-encoded
+Website sử dụng AngularJs. Thử search với từ khóa `{{1+2}}` thì kết quả trả về 3. Như vậy, ta có thể execute code bên trong cặp dấu `{{`.
+
+Nhận thấy dấu đóng mở tag và dấu nháy đơn đã bị encoded, tuy nhiên ta vẫn có thế sử dụng dấu nháy kép. Search với từ khóa `{{constructor.constructor("alert(1)")()}}`, kết quả lệnh alert được thực thi thành công.
 
 # 12. Reflected DOM XSS
+
 
 # 13. Stored DOM XSS
 
