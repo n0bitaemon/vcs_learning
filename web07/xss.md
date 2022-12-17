@@ -87,11 +87,23 @@ Website sử dụng AngularJs. Thử search với từ khóa `{{1+2}}` thì kế
 Nhận thấy dấu đóng mở tag và dấu nháy đơn đã bị encoded, tuy nhiên ta vẫn có thế sử dụng dấu nháy kép. Search với từ khóa `{{constructor.constructor("alert(1)")()}}`, kết quả lệnh alert được thực thi thành công.
 
 # 12. Reflected DOM XSS
+Ta thấy trong file `searchResults.js` có đoạn code: `eval('var searchResultsObj = ' + this.responseText);`, và trong `responseText` là chuỗi JSON có dạng `{"results":[],"searchTerm":"abc"}`, trong đó searchTerm là từ khóa ta nhập vào. Như vậy, nếu ta có thể escape chuỗi JSON và chèn vào lệnh `alert(1)`, thì lệnh `eval` sẽ khiến lệnh `alert(1)` được thực thi
 
+Thử chèn `"`, ta thấy kí tự `\` được tự động thêm vào: `{"results":[],"searchTerm":"\""}`
+
+Thử chèn `\"`, ta thấy với kí tự `\` vẫn giữ nguyên, đoạn JSON trở thành `{"results":[],"searchTerm":"\"}`. Như vậy ta có thể escape được string trong value của "searchTerm"
+
+Như vậy, ta sẽ exploit XSS với payload: `\"};alert(1)//`, khi đó đoạn JSON trở thành `{"results":[],"searchTerm":"\\"};alert(1)//"}`
+
+Thử cách trên bằng cách gửi request `GET /search-results?search=\"};alert(1)//`, kết quả thành công.
 
 # 13. Stored DOM XSS
+Ta thấy website đã chặn XSS bằng đoạn code `html.replace('<', '&lt;').replace('>', '&gt;');`. Tuy nhiên, do hàm `replace` chỉ thay thế kí tự đầu tiên trong chuỗi, nên ta có thể bypass được.
+
+Submit một comment với phần body là `<><img src=1 onerror=alert(1)>`, kết quả thành công.
 
 # 14. Exploiting cross-site scripting to steal cookies
+
 
 # 15. Exploiting cross-site scripting to capture passwords
 
