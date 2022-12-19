@@ -162,6 +162,20 @@ Search trong Portswigger XSS cheatsheet, ta tìm được payload:
 Chèn payload vào request, kết quả thành công.
 
 # 20. Reflected XSS in canonical link tag
+Trong trang "Home", ta thấy có một thẻ `<link rel="canonical"...>`
+
+![image](https://user-images.githubusercontent.com/103978452/208432456-e17cc7f1-2a33-437a-84f7-f0b01c07702f.png)
+
+Khi ta thay thêm query string vào trong URL, thẻ này cũng sẽ được update lại tương ứng. Ta sẽ thử escape thuộc tính `href` và thêm thuộc tính mới. Ta thấy ký tự space đã bị encode, tuy nhiên có thể dùng kí tự `/` để thay thế
+
+Thử sử dụng URL sau làm payload:
+```
+https://0af50083034c3b9fc02e2cc7005f0047.web-security-academy.net/?abc'%2Faccesskey='x'%2Fonclick='alert(1)
+```
+khi đó canonical link tag sẽ trở thành:
+
+![image](https://user-images.githubusercontent.com/103978452/208432860-49125927-4b4c-4ad0-b73d-998bb3faa65d.png)
+Kết quả, bài lab được giải thành công.
 
 # 21. Reflected XSS into a JavaScript string with single quote and backslash escaped
 
