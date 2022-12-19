@@ -137,10 +137,29 @@ xhr.send();
 Đoạn code trên khi được thực thi sẽ truy cập `/my-account`, lấy ra csrf token rồi dùng csrf token đó để thực hiện đổi email của người dùng. Sau khi submit, kết quả thành công.
 
 # 17. Reflected XSS into HTML context with most tags and attributes blocked
+Ta thấy chức năng search đã chặn các tag HTML. Thử đưa request `GET /?search=<script>` vào Intruder rồi tiến hành bruteforce `script`, với danh sách là tên các tags. Ta thấy đối với tag `<body>` thì không hiển thị lỗi.
+
+Thử payload `<body onload=alert(1)>` thì hiển thị lỗi `"Attribute is not allowed"`, website đã chặn hầu hết các attribute. Tiến hành brutefoce như trên đối với attribute thì phát hiện ta vẫn có thể sử dụng `onresize`.
+
+![image](https://user-images.githubusercontent.com/103978452/208388670-224d7788-7d41-492a-bc58-6709b57cf36e.png)
+
+Vào exploit server, thay đổi phần body thành đoạn code sau:
+```
+<iframe src="https://0adc000d035f895dc09086d3002500e3.web-security-academy.net/?search=<body+onresize=print()>" onload="this.width=500;"></iframe>
+```
+Sau khi click "Deliver to victim", kết quả thành công.
 
 # 18. Reflected XSS into HTML context with all tags blocked except custom ones
 
 # 19. Reflected XSS with some SVG markup allowed
+Sau khi bruteforce với các tags và attributes, ta thấy có tag `svg` và `animateTransform` được cho phép. Cùng với đó ta có thể sử dụng thuộc tính `onbegin`.
+
+Search trong Portswigger XSS cheatsheet, ta tìm được payload:
+```
+<svg><animatetransform onbegin=alert(1) attributeName=transform>
+```
+
+Chèn payload vào request, kết quả thành công.
 
 # 20. Reflected XSS in canonical link tag
 
