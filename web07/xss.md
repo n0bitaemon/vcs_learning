@@ -178,8 +178,35 @@ khi đó canonical link tag sẽ trở thành:
 Kết quả, bài lab được giải thành công.
 
 # 21. Reflected XSS into a JavaScript string with single quote and backslash escaped
+![image](https://user-images.githubusercontent.com/103978452/208794425-bc0b419c-5d8b-45e3-ab00-101a4f579b8b.png)
+
+Website có một đoạn script gồm 2 dòng, trong đó dòng thứ nhất có dấu backslash và single quote bị escaped. Còn dòng thứ hai thì sử dụng encodeURI rồi mới chèn string vào trong URL.
+
+Ta có thể bypass dòng code đầu tiên bằng cách search với từ khóa:
+```
+</script><script>alert(1)</script>
+```
+Khi đó dòng code đầu tiên sẽ trở thành
+```
+var searchTerms = '</script><alert(1)</script>';
+```
+Đoạn code này sẽ đóng thẻ script và chèn vào đoạn script mới. Sau khi submit, kết quả thành công.
 
 # 22. Reflected XSS into a JavaScript string with angle brackets and double quotes HTML-encoded and single quotes escaped
+Trong trang Home có chứa một thẻ script với hai dòng:
+
+![image](https://user-images.githubusercontent.com/103978452/208795089-6790f620-b67d-401f-a2cb-662ac197e08d.png)
+Sau khi thử thì ta thấy dấu ngoặc nhọn và dấu nháy kép đã bị encoded, còn dấu nháy đơn thì bị escaped. Tuy nhiên dấu backslash `\` thì lại không bị thay đổi gì.
+
+Như vậy ta có thể bypass bằng cách search với từ khóa:
+```
+\';alert(1);//
+```
+Khi đó dòng code đầu tiên trở thành:
+```
+var searchTerms = '\\';alert(1);//';
+```
+Sau khi submit, kết quả thành công.
 
 # 23. Stored XSS into `onclick` event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
 
