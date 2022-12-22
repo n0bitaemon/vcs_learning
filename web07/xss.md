@@ -220,8 +220,17 @@ var searchTerms = '\\';alert(1);//';
 Sau khi submit, kết quả thành công.
 
 # 23. Stored XSS into `onclick` event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
+Trong chức năng comment của website, ta thấy có đoạn code: `onclick="var tracker={track(){}};tracker.track('<tên-website>');"`. Như vậy hàm tracker.track sẽ dùng tên website để làm tham số. Nhận thấy không thể sử dụng dấu đóng mở tag, dấu nháy đơn, nháy kép và backslash. Tuy nhiên, nếu hàm `tracker.track` thực hiện HTML decoded, ta có thể sử dụng `&apos;` để escape javascript string. 
+
+Thử comment với tên website là `https://&apos;-alert(1)&apos;`. Sau khi submit, kết quả thành công.
 
 # 24. Reflected XSS into a template literal with angle brackets, single, double quotes, backslash and backticks Unicode-escaped
+Khi search với từ khóa `ahel`, ta thấy từ đó xuất hiện trong một đoạn script:
+
+![image](https://user-images.githubusercontent.com/103978452/209027414-7c316126-488b-44fa-996f-6910d02bdc4c.png)
+Đoạn script sử dụng dấu backticks, như vậy ta có thể dễ dàng execute javascript bằng cách chèn payload `${alert(1)}`
+
+Thử search với từ khóa `${alert(1)}`, kết quả thành công.
 
 # 25. Reflected XSS with event handlers and `href` attributes blocked
 
