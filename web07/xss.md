@@ -161,6 +161,16 @@ Vào exploit server, thay đổi phần body thành đoạn code sau:
 Sau khi click "Deliver to victim", kết quả thành công.
 
 # 18. Reflected XSS into HTML context with all tags blocked except custom ones
+Ta thấy chức năng search của website đã chặn tất cả các tag, tuy nhiên ta vẫn có thể inject một custom tag bình thường, ví dụ như tag `<xss>`
+
+Khi trong URL có đoạn hash `#abc` thì website sẽ tự động focus vào phần tử có `id=abc`. Như vậy ta có thể dùng thuộc tính `autofocus` kết hợp với hash trong URL để thực thi lệnh javascript.
+
+Vào exploit server và cấu hình đoạn HTML sau:
+```
+<script>document.location=https://0a6200f2049bb477c0242c69005400fd.web-security-academy.net/?search=%3Cxss+id%3Dx+onfocus%3Dalert%281%29+tabindex%3D1%3E#x
+```
+
+Sau khi click "Deliver to victim", kết quả thành công.
 
 # 19. Reflected XSS with some SVG markup allowed
 Sau khi bruteforce với các tags và attributes, ta thấy có tag `svg` và `animateTransform` được cho phép. Cùng với đó ta có thể sử dụng thuộc tính `onbegin`.
