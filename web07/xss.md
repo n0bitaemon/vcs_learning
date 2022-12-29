@@ -34,7 +34,7 @@ Nhấn vào "Back", kết quả thành công.
 # 6. DOM XSS in jQuery selector sink using a hashchange event
 Website sử dụng onhashchange event để xác định chuỗi hash, sau đó dùng jQuery để tìm và scroll đến vị trí phù hợp.
 
-![image](https://user-images.githubusercontent.com/103978452/208067541-71b34f77-dad3-4e87-9fd7-51db73e5427d.png)
+![image](https://userimages.githubusercontent.com/103978452/208067541-71b34f77-dad3-4e87-9fd7-51db73e5427d.png)
 
 Nếu ta đặt chuỗi hash thành `#<img src=1 onerror=alert(1)>` thì đoạn code sẽ là
 ```
@@ -230,7 +230,7 @@ var searchTerms = '\\';alert(1);//';
 Sau khi submit, kết quả thành công.
 
 # 23. Stored XSS into `onclick` event with angle brackets and double quotes HTML-encoded and single quotes and backslash escaped
-Trong chức năng comment của website, ta thấy có đoạn code: `onclick="var tracker={track(){}};tracker.track('<tên-website>');"`. Như vậy hàm tracker.track sẽ dùng tên website để làm tham số. Nhận thấy không thể sử dụng dấu đóng mở tag, dấu nháy đơn, nháy kép và backslash. Tuy nhiên, nếu hàm `tracker.track` thực hiện HTML decoded, ta có thể sử dụng `&apos;` để escape javascript string. 
+Trong chức năng comment của website, ta thấy có đoạn code: `onclick="var tracker={track(){}};tracker.track('<tên-website>');"`. Như vậy hàm tracker.track sẽ dùng tên website để làm tham số. Nhận thấy không thể sử dụng dấu đóng mở tag, dấu nháy đơn, nháy kép và backslash. Tuy nhiên, nếu hàm `tracker.track` thực hiện HTML decode, ta có thể sử dụng `&apos;` để escape javascript string. 
 
 Thử comment với tên website là `https://&apos;-alert(1)&apos;`. Sau khi submit, kết quả thành công.
 
@@ -243,6 +243,14 @@ Khi search với từ khóa `ahel`, ta thấy từ đó xuất hiện trong mộ
 Thử search với từ khóa `${alert(1)}`, kết quả thành công.
 
 # 25. Reflected XSS with event handlers and `href` attributes blocked
+Tiến hành brute-force bằng BurpIntruder, ta thấy website đã block hầu hết các thẻ và thuộc tính `href`. Tuy nhiên thẻ `<a>`, `<svg>`, `<animate>` và `<text>` vẫn được cho phép.
+
+Từ thẻ `<animate>`, ta hoàn toàn có thể gán được thuộc tính `href` cho thẻ `<a>`. Ta dùng chức năng search với từ khóa sau:
+```
+<svg><a><text x=20 y=20>Click me</text><animate attributeName=href dur=5s repeatCount=indefinite keytimes=0;0;1 values="https://.net?;javascript:alert(1);0">
+```
+
+Sau khi submit, bài lab được giải thành công.
 
 # 26. Reflected XSS in a JavaScript URL with some characters blocked
 
