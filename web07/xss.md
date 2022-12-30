@@ -261,4 +261,12 @@ Sau khi submit, bài lab được giải thành công.
 # 29. Reflected XSS protected by very strict CSP, with dangling markup attack
 
 # 30. Reflected XSS protected by CSP, with CSP bypass
+Ta thấy website có lỗ hổng XSS trong chức năng search, và trong CSP có directive `report-uri /csp-report?token=`
 
+![image](https://user-images.githubusercontent.com/103978452/210028017-4c9ae655-db58-48d6-8a2d-1ca26c6c712f.png)
+
+Ta thử thêm vào URL query string `?token=abc` thì directive report-uri trong CSP trở thành `/csp-report?token=abc`. Như vậy ta có thể inject input vào trong CSP. Trong CSP có directive `script-src 'self'` để ngăn execute inline script, tuy nhiên ta có thể ghi đè bằng cách sử dụng directive `script-src-elem`. Thử thay đổi `token=%3Bscript-src-elem+%27unsafe-inline%27`, kết quả `script-src-elem` đã được thêm vào CSP:
+
+![image](https://user-images.githubusercontent.com/103978452/210028194-4027abce-b698-4403-9b52-79d3d107fc11.png)
+
+Ta truy cập `<my-lab>/?token=%3Bscript-src-elem+%27unsafe-inline%27&search=%3Cscript%3Ealert(1)%3C/script%3E`, kết quả lệnh alert đã được thực thi thành công, bài lab được giải.
