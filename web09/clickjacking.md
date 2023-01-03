@@ -161,7 +161,7 @@ Sau khi click "Deliver to victim", kết quả thành công.
   position: relative;
   width: 600px;
   height: 600px;
-  opacity: 0.9;
+  opacity: 0.00001;
   z-index: 2;
 }
 #target_website2{
