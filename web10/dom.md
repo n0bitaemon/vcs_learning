@@ -30,6 +30,19 @@ Vào exploit, cấu hình đoạn code sau:
 Sau khi click "Deliver to victim", bài lab được giải.
 
 # 3. DOM XSS using web messages and JSON.parse
+Trong source code có đoạn script sau:
+
+![image](https://user-images.githubusercontent.com/103978452/211520513-92a0e9b0-3957-4279-be03-e3ee389d4364.png)
+Nhận thấy dữ liệu hợp lệ cho "message" event là một JSON object. Nếu ta truyền một object có `type=load-channel` thì thuộc tính `url` của object đó sẽ được gắn cho một thẻ `iframe` mới.
+
+Vào exploit server và cấu hình đoạn HTML sau:
+
+```
+<iframe src="https://0a7a00e903689c12c25c61e7002a00c8.web-security-academy.net/" onload="this.contentWindow.postMessage('{&quot;type&quot;:&quot;load-channel&quot;, &quot;url&quot;:&quot;javascript:print()&quot;}', '*')"></iframe>
+```
+Đoạn code trên sẽ gửi một message với content `{"type": "load-channel", "url": "javascript:print()"}`. Như vậy, khi thẻ `<iframe src="javascript:print()">` được tạo, lệnh print() sẽ được gọi.
+
+Sau khi click "Deliver to victim", kết quả thành công.
 
 # 4. DOM-based open redirection
 
