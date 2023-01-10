@@ -45,6 +45,18 @@ Vào exploit server và cấu hình đoạn HTML sau:
 Sau khi click "Deliver to victim", kết quả thành công.
 
 # 4. DOM-based open redirection
+Trong source code có đoạn thẻ `<a>` với sự kiện onclick như bên dưới:
+
+```
+<a href='#' onclick='returnUrl = /url=(https?:\/\/.+)/.exec(location); if(returnUrl)location.href = returnUrl[1];else location.href = "/"'>Back to Blog</a>
+```
+Đoạn code trên sẽ redirect user tới giá trị của tham số `url`. Như vậy, ta có thể khiến user redirect đến exploit server bằng cách thiết lập URL sau:
+
+```
+https://0ad800f0032df10ac4cb4d1300dd004e.web-security-academy.net/post?postId=5&url=https://exploit-0a470076034cf181c4014c9201e80056.exploit-server.net/exploit
+```
+
+Nếu user click "Black to blog" thì website sẽ tự động chuyển hướng đến exploit server.
 
 # 5. DOM-based cookie manipulation
 
