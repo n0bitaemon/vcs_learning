@@ -112,4 +112,26 @@ Các bước exploit như sau:
 Lệnh `alert(1)` được thực thi và bài lab được giải. 
 
 # 7. Clobbering DOM attributes to bypass HTML filters
+Nhận thấy website sử dụng thư viện HTMLJanitor để loại bỏ các tag và attributes độc hại. Tuy nhiên do thư viện này sử dụng thuộc tính `attributes` để duyệt qua các thuộc tính của phần tử, ta có thể exploit tấn công sử dụng kỹ thuật Clobbering DOM attributes.
 
+Khi ta submit comment với nội dung sau:
+
+```
+<form onclick=alert(1)><input id=attributes>
+```
+Thuộc tính `.attributes` của element `<form>` sẽ trở thành tag `<input id=attributes>` thay vì là một collection các thuộc tính của thẻ `<form>`. Khi đó, các thuộc tính độc hại sẽ không bị loại bỏ. Sau khi submit, click vào thẻ input thì thấy lệnh `alert(1)` được thực thi thành công.
+
+Vào trang product bất kỳ (ví dụ `productId=2`) và submit một comment với nội dung:
+
+```
+<form id=x tabindex=1 onfocusin=print()><input id=attributes>
+```
+
+```
+Vào exploit server, cấu hình đoạn HTML sau:
+```
+<iframe src="https://0a8f0039037eb90dc02013c300cb008d.web-security-academy.net/post?postId=2" onload="if(!this.src.includes('#x')){this.src = this.src + '#x'}"></iframe>
+```
+Đoạn HTML trên sẽ tạo 1 thẻ  `<iframe>` trỏ tới trang sản phẩm `/post?postId=2`, sau đó sẽ thêm đoạn hash `#x` để URL trở thành `/post?postId=2#x`. Như vậy, thẻ `<form>` sẽ bắt được sự kiện onfocusin và lệnh `print()` được thực thi.
+
+Sau khi click "Deliver to victim", kết quả thành công.
