@@ -79,6 +79,21 @@ document.location='https://0a01001f03664060c1505dad001d00ec.web-security-academy
 Sau khi click "Deliver exploit to victim", bài lab được giải thành công.
 
 # 6. Exploiting DOM clobbering to enable XSS
+Trong nội dung file `loadCommentsWithDomClobbering.js` có đoạn code sau:
+
+![image](https://user-images.githubusercontent.com/103978452/211731470-ff72b23f-525a-4ade-ad8e-d2ed8866ad77.png)
+Như vậy website sẽ kiểm tra `window.defaultAvatar` đã được định nghĩa hay chưa, nếu chưa thì sẽ sử dụng URL mặc định, còn nếu chưa thì sẽ sẽ gọi `window.defaultAvatar.avatar` để làm giá trị cho thuộc tính `src` của thẻ img.
+
+Như vậy, ta có thể tấn công DOM clobbering. Đầu tiên, submit một comment với nội dung:
+```
+<a id=defaultAvatar>
+<a id=defaultAvatar name=avatar href='http://x:"onerror="alert(1)"x="'>
+```
+
+Tiếp đó, tiếp tục submit một comment bất kỳ. Sau khi refresh lại trang, image của comment này sẽ trở thành:
+
+![image](https://user-images.githubusercontent.com/103978452/211732261-e1f38fcb-d0c5-45e3-8fe2-71bbf23e0f4d.png)
+Lệnh `alert(1)` được thực thi và bài lab được giải. 
 
 # 7. Clobbering DOM attributes to bypass HTML filters
 
