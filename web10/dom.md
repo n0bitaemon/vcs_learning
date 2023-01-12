@@ -33,6 +33,7 @@ Sau khi click "Deliver to victim", bài lab được giải.
 Trong source code có đoạn script sau:
 
 ![image](https://user-images.githubusercontent.com/103978452/211520513-92a0e9b0-3957-4279-be03-e3ee389d4364.png)
+
 Nhận thấy dữ liệu hợp lệ cho "message" event là một JSON object. Nếu ta truyền một object có `type=load-channel` thì thuộc tính `url` của object đó sẽ được gắn cho một thẻ `iframe` mới.
 
 Vào exploit server và cấu hình đoạn HTML sau:
