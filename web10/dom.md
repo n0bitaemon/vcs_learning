@@ -109,10 +109,14 @@ Các bước exploit như sau:
 
 ![image](https://user-images.githubusercontent.com/103978452/211732261-e1f38fcb-d0c5-45e3-8fe2-71bbf23e0f4d.png)
 
-Lệnh `alert(1)` được thực thi và bài lab được giải. 
+Lệnh `alert(1)` được thực thi và bài lab được giải.
 
 # 7. Clobbering DOM attributes to bypass HTML filters
-Nhận thấy website sử dụng thư viện HTMLJanitor để loại bỏ các tag và attributes độc hại. Tuy nhiên do thư viện này sử dụng thuộc tính `attributes` để duyệt qua các thuộc tính của phần tử, ta có thể exploit tấn công sử dụng kỹ thuật Clobbering DOM attributes.
+Nhận thấy website sử dụng thư viện HTMLJanitor để loại bỏ các tag và attributes độc hại. Nhìn vào source code của file htmlJanitor.js có đoạn code sau:
+
+![image](https://user-images.githubusercontent.com/103978452/211958044-c36d6bac-8745-481a-9f64-642e58488988.png)
+
+Như vậy, HTMLJanitor sẽ dùng `node.attributes[a]` để duyệt qua các thuộc tính của element, nếu có các thuộc tính độc hại thì sẽ xóa chúng đi. Tuy nhiên ta hoàn toàn có thể thực hiện Clobbering DOM attributes để ghi đè lên `node.attributes` khiến các thuộc tính ta chèn vào được skip bởi HTMLJanitor.
 
 Khi ta submit comment với nội dung sau:
 
@@ -127,8 +131,8 @@ Vào trang product bất kỳ (ví dụ `productId=2`) và submit một comment 
 <form id=x tabindex=1 onfocusin=print()><input id=attributes>
 ```
 
-```
 Vào exploit server, cấu hình đoạn HTML sau:
+
 ```
 <iframe src="https://0a8f0039037eb90dc02013c300cb008d.web-security-academy.net/post?postId=2" onload="if(!this.src.includes('#x')){this.src = this.src + '#x'}"></iframe>
 ```
