@@ -2,6 +2,7 @@
 Nhận thấy trong source code có đoạn mã sau:
 
 ![image](https://user-images.githubusercontent.com/103978452/211499636-60830aeb-fd4d-4bcd-bae7-fbaf3f1a149a.png)
+
 Đoạn code trên sẽ nhận web message và inject vào tag có id là 'ads'. Như vậy ta có thể cấu hình XSS sử dụng thẻ `<iframe>`
 
 Vào exploit server, cấu hình đoạn code sau:
@@ -18,6 +19,7 @@ Click "Deliver to victim", kết quả thành công.
 Nhận thấy trong source code có đoạn script sau:
 
 ![image](https://user-images.githubusercontent.com/103978452/211507542-82ddefb4-5d22-42c8-abc7-f3769e961b4e.png)
+
 Đoạn script trên sẽ bắt sự kiện message được gửi đến, kiểm tra xem trong data(url) nếu có chuỗi 'http:' hoặc 'https:' trong message content thì sẽ thiết lập `location.href=url`
 
 Vào exploit, cấu hình đoạn code sau:
