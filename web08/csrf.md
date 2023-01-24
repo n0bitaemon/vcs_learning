@@ -99,7 +99,42 @@ Vào trong exploit server và cấu hình đoạn HTML sau:
 
 Sau khi submit, bài lab được giải thành công.
 
-# 7. CSRF where Referer validation depends on header being present
+# 7. SameSite Lax bypass via method override
+Ta thấy request thay đổi email là một request `POST /my-account/change-email` với tham số `email`. Dùng BurpRepeater để gửi request, kèm theo tham số `_method=GET` thì lỗi `Method Not Allowed` được hiển thị. Như vậy, website có nhận một tham số là `_method` và sẽ coi giá trị của nó là HTTP method của request được gửi đến.
+
+Vào exploit server, cấu hình đoạn HTML sau:
+
+```
+<script>
+document.location="https://0ab8000703fe15d8c1b1b7a700d9001f.web-security-academy.net/my-account/change-email?email=attacker@gmail.com&_method=POST"
+</script>
+```
+
+Đoạn script trên sẽ thực hiện GET request (gây ra lỗi Method Not Allowed), nhưng lại có tham số `_method=POST`, do đó sẽ server sẽ xử lý nó như một POST request, khiến email được thay đổi thành công. Sau khi click "Deliver to victim", bài lab được giải. 
+
+# 8. SameSite Strict bypass via client-side redirect
+Nhận thấy để thay đổi email, ta cần thực hiện request POST /my-account/change-email với hai tham số là `email=abc@gmail.com&submit=1`. Tuy nhiên thử convert thành GET request, kết quả email vẫn bị thay đổi. Như vậy ta có thể thực hiện đổi email qua redirection.
+
+Trong page `/post/comment/confirmation?postId=2` có load file `commentConfirmationRedirect.js` với nội dung sau:
+
+![image](https://user-images.githubusercontent.com/103978452/214318604-351e37a6-b3e0-4b89-9402-1ca46c84eb15.png)
+Thử thay đổi `postId=../my-account`, kết quả bị redirect về trang `/my-account`. Như vậy ta có thể sử dụng lỗ hổng này để thực hiện SameSite request, điều hướng user tới trang thay đổi email.
+
+Ta vào exploit server và cấu hình đoạn code sau:
+
+```
+<script>
+document.location="https://0a83005104b049a3c0f910ae005300b9.web-security-academy.net/post/comment/confirmation?postId=..%2Fmy-account%2Fchange-email%3Femail%3Dabc%40gmail.com%26submit%3D1"
+</script>
+```
+
+Đoạn code trên sẽ redirect user tới `/post/comment/confirmation?postId=..%2Fmy-account%2Fchange-email%3Femail%3Dabc%40gmail.com%26submit%3D1`, sau đó user tiếp tục được redirect tới `/my-account/change-email?email=abc@gmail.com&submit=1` khiến email của user bị thay đổi. Sau khi click "Deliver to victim", bài lab được giải.
+fac
+# 9. SameSite Strict bypass via sibling domain
+
+# 10. SameSite Lax bypass via cookie refresh
+
+# 11. CSRF where Referer validation depends on header being present
 Ta thấy việc email có được thay đổi thành công hay không phụ thuộc vào việc Referer header có domain là `https://0a90007603f431c2c167ad45006f00b0.web-security-academy.net` hay không. Tuy nhiên nếu ta xóa đi Referer header, email vẫn bị thay đổi.
 
 Như vậy, ta vào exploit server và cấu hình đoạn HTML sau:
@@ -120,7 +155,7 @@ Như vậy, ta vào exploit server và cấu hình đoạn HTML sau:
 
 Thẻ `<meta name="referrer" content="never">` sẽ ngăn không đưa dữ liệu vào header Referer của request tiếp theo. Sau khi click "Deliver to victim", kết quả thành công. 
 
-# 8. CSRF with broken Referer validation
+# 12. CSRF with broken Referer validation
 Trong chức năng thay đổi email, sau một vài lần check thì ta nhận thấy chỉ khi trong header `Referrer` có chuỗi `0a7d0068037fd0c0c2b20d6200f60041.web-security-academy.net` thì mới có thể submit thành công.
 
 Như vậy, ta vào exploit server và cấu hình đoạn code sau:
