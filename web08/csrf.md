@@ -129,7 +129,7 @@ document.location="https://0a83005104b049a3c0f910ae005300b9.web-security-academy
 ```
 
 Đoạn code trên sẽ redirect user tới `/post/comment/confirmation?postId=..%2Fmy-account%2Fchange-email%3Femail%3Dabc%40gmail.com%26submit%3D1`, sau đó user tiếp tục được redirect tới `/my-account/change-email?email=abc@gmail.com&submit=1` khiến email của user bị thay đổi. Sau khi click "Deliver to victim", bài lab được giải.
-fac
+
 # 9. SameSite Strict bypass via sibling domain
 
 # 10. SameSite Lax bypass via cookie refresh
