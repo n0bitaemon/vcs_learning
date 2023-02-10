@@ -58,7 +58,15 @@ Nhìn vào trong source code client, ta thấy dòng comment:
 ```
 <!-- TODO: Refactor once /libs/CustomTemplate.php is updated -->
 ```
-Thử truy cập `/libs/CustomTemplate.php` thì không thấy hiển thị gì cả, như vậy developer đã thay đổi file này để giấu đi source code. 
+Thử truy cập `/libs/CustomTemplate.php` thì không thấy hiển thị gì cả, như vậy developer đã thay đổi file này để giấu đi source code. Trong Bash, các backup files sẽ có `~` ở cuối tên file. Như vậy ta thử truy cập `/libs/CustomTemplate.php~`, kết quả source code đã được hiển thị.
+
+![image](https://user-images.githubusercontent.com/103978452/218042042-8521d715-4df1-44d0-baa7-e3eccb86b470.png)
+Nhận thấy hàm `__destruct` của object "CustomTemplate" sẽ xóa đi file có tên trùng với thuộc tính "lock_file_path" của nó. Như vậy ta cấu hình serialized object sau:
+
+```
+O:14:"CustomTemplate":2:{s:18:"template_file_path";s:9:"hello.txt";s:14:"lock_file_path";s:23:"/home/carlos/morale.txt";}
+```
+Nếu ứng dụng deserialie object trên, hàm `__construct` sẽ được gọi, xóa đi file `/home/carlos/morale.txt`. Thực hiện base64 object, sau đó thay thế cho session cookie hiện tại. Refresh website, kết quả thành công.
 
 # 5. Exploiting Java deserialization with Apache Commons
 
