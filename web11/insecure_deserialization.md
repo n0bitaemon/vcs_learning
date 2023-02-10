@@ -43,6 +43,12 @@ O:4:"User":2:{s:8:"username";s:13:"administrator";s:12:"access_token";i:0;}
 Thực hiện base64 encode và thay thế cookie hiện tại, kết quả truy cập thành công. Vào admin panel và xóa user carlos, bài lab được giải.
 
 # 3. Using application functionality to exploit insecure deserialization
+Đăng nhập với credentials wiener:peter, thực hiện base64 decode session cookie ta được:
+
+```
+O:4:"User":3:{s:8:"username";s:6:"wiener";s:12:"access_token";s:32:"q1eh79na8deste009sniaq0ytxnirwh5";s:11:"avatar_link";s:19:"users/wiener/avatar";}
+```
+Dự đoán khi thực hiện chức năng Delete Account, ứng dụng sẽ xóa cả ảnh avatar sử dụng thuộc tính "avatar_link" trong object "User" (session cookie sau khi được serialized). Như vậy thay đổi thành `"avatar_link";s:23:"/home/carlos/morale.txt"`, sau đó click "Delete Account". Kết quả, bài lab được giải thành công.
 
 # 4. Arbitrary object injection in PHP
 
