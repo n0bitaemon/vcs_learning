@@ -51,6 +51,14 @@ O:4:"User":3:{s:8:"username";s:6:"wiener";s:12:"access_token";s:32:"q1eh79na8des
 Dự đoán khi thực hiện chức năng Delete Account, ứng dụng sẽ xóa cả ảnh avatar sử dụng thuộc tính "avatar_link" trong object "User" (session cookie sau khi được serialized). Như vậy thay đổi thành `"avatar_link";s:23:"/home/carlos/morale.txt"`, sau đó click "Delete Account". Kết quả, bài lab được giải thành công.
 
 # 4. Arbitrary object injection in PHP
+Đăng nhập với credentials wiener:peter, thực hiện base64 decode session cookie, ta được một object User. Như vậy website sử dụng cơ chế xác thực dựa trên serialized session. Nếu ta truyền vào một object thì object đó sẽ được deserialized.
+
+Nhìn vào trong source code client, ta thấy dòng comment:
+
+```
+<!-- TODO: Refactor once /libs/CustomTemplate.php is updated -->
+```
+Thử truy cập `/libs/CustomTemplate.php` thì không thấy hiển thị gì cả, như vậy developer đã thay đổi file này để giấu đi source code. 
 
 # 5. Exploiting Java deserialization with Apache Commons
 
