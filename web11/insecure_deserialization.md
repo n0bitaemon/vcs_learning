@@ -131,5 +131,32 @@ Thay thế đoạn mã trên với session cookie hiện tại, sau khi refresh 
 # 8. Developing a custom gadget chain for Java deserialization
 
 # 9. Developing a custom gadget chain for PHP deserialization
+Nhận thấy website sử dụng serialized session cookie. Trong phần comment phía client-side có đoạn `<!-- TODO: Refactor once /cgi-bin/libs/CustomTemplate.php is updated -->`. Khi truy cập `/cgi-bin/libs/CustomTemplate.php~` (vị trí file backup) thì thấy có một đoạn code:
+
+![image](https://user-images.githubusercontent.com/103978452/218757439-ab1050a2-becb-4f82-acc6-e92dd61294cf.png)
+
+Ta thấy trong khi truy vấn một thuộc tính của object với type `DefaultMap`, hàm `__get($name)` sẽ được gọi và thực thi `call_user_func($this->callback, $name)`. Như vậy chúng ta sẽ tìm một gadget chains để truy cập tới thuộc tính của một object DefaultMap.
+
+Ta thấy:
+
++) Khi deserialize object `CustomTemplate` -> `__wakeup()` -> `buil_product()` -> tạo mới một object Product
+
++) Khi tạo mới object `Product` -> `__construct()` -> truy cập thuộc tính `$desc->$default_desc_type`
+
++) Nếu `$desc` là một object DefaultMap -> `__get($name)` -> `call_user_func($this->callback, $name)`
+
+Như vậy, nếu ta có thể thay đổi `$desc` của `Product` thành một object `DefaultMap`, ta sẽ có thể gọi đến hàm `call_user_func`. Cấu hình payload như sau:
+
+```
+O:14:"CustomTemplate":2:{s:17:"default_desc_type";s:26:"rm /home/carlos/morale.txt";s:4:"desc";O:10:"DefaultMap":1:{s:8:"callback";s:4:"exec";}}
+```
+Đoạn code trên là chuỗi serialized của object CustomTemplate, với `default_desc_type="rm /home/carlos/morale.txt"` và `desc` là một object DefaultMap, với thuộc tính `callback="exec"`. Sau khi được deserialized, nó sẽ hàm `call_user_func("exec", "rm /home/carlos/morale.txt")` sẽ được gọi và xóa file.
+
+Thực hiện base64 encode, rồi URL encode ta được chuỗi:
+
+```
+TzoxNDoiQ3VzdG9tVGVtcGxhdGUiOjI6e3M6MTc6ImRlZmF1bHRfZGVzY190eXBlIjtzOjI2OiJybSAvaG9tZS9jYXJsb3MvbW9yYWxlLnR4dCI7czo0OiJkZXNjIjtPOjEwOiJEZWZhdWx0TWFwIjoxOntzOjg6ImNhbGxiYWNrIjtzOjQ6ImV4ZWMiO319
+```
+Thay thế payload với session cookie hiện tại. Sau khi refresh, bài lab được giải.
 
 # 10. Using PHAR deserialization to deploy a custom gadget chain
