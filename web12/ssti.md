@@ -57,5 +57,18 @@ Sau khi submit, kết quả thành công.
 Như vậy, ta chèn payload `{{settings.SECRET_KEY}}` để lấy thông tin SECRET_KEY. Sau khi click Preview, ta thu được `SECRET_KEY=gdrnh5wqn03818q16twn6vhz8zo28tdd`. Dùng thông tin thu được để submit, kết quả thành công.
 
 # 6. Server-side template injection in a sandboxed environment
+Đăng nhập với credentails "content-manager:C0nt3ntM4n4g3r", ta thấy có chức năng "Edit Template" và có thể Preview sau khi edit. Ta thấy một bài post có sử dụng `${product.name}`, ta thử thay thành `${abc}` thì thông báo lỗi hiển thị cho ta biết rằng website sử dụng FreeMarker Template với ngôn ngữ Java.
+
+Thử payload như trong bài lab #3 thì thấy thông báo lỗi "not allowed in the template for security reasons". Website đã chặn một số chức năng để tránh SSTI, tuy nhiên thì ta thấy vẫn truy cập được object `product` như thường.
+
+Sau khi research, ta tìm được một payload đọc file dựa trên việc sử dụng một chuỗi các objects và methods:
+
+```
+${product.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().resolve('path_to_the_file').toURL().openStream().readAllBytes()?join(" ")}
+```
+
+![image](https://user-images.githubusercontent.com/103978452/219292169-12d11c81-8897-4d4d-96d5-f289ad7e7f44.png)
+
+Thay thế "path_to_the_file" thành "/home/carlos/my_password.txt", ta nhận được một chuỗi các số. Chuyển lại thành ký tự theo ASCII, thu được mật khẩu là "ugmfdfbhew2q79m8fu9t". Sử dụng thông tin có được để submit, kết quả thành công.
 
 # 7. Server-side template injection with a custom exploit
