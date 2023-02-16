@@ -52,6 +52,9 @@ GET /?message=%7b%7b%23with%20"s"%20as%20%7cstring%7c%7d%7d%0d%0a%20%20%7b%7b%23
 Sau khi submit, kết quả thành công.
 
 # 5. Server-side template injection with information disclosure via user-supplied objects
+Đăng nhập với credentails "content-manager:C0nt3ntM4n4g3r", ta thấy có chức năng "Edit Template" và có thể Preview sau khi edit. Thử chèn `{{7*7}}` thì xuất hiện thông báo lỗi cho ta biết website sử dụng Django framework. Sau các lần thử, ta dự đoán website sử dụng template là Jinja2.
+
+Như vậy, ta chèn payload `{{settings.SECRET_KEY}}` để lấy thông tin SECRET_KEY. Sau khi click Preview, ta thu được `SECRET_KEY=gdrnh5wqn03818q16twn6vhz8zo28tdd`. Dùng thông tin thu được để submit, kết quả thành công.
 
 # 6. Server-side template injection in a sandboxed environment
 
