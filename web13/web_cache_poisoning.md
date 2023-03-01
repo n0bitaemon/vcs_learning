@@ -82,6 +82,14 @@ User-Agent: Mozilla/5.0 (Victim) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/1
 Submit request đến khi đảm bảo response được lưu vào trong cache. Kết quả, bài lab được giải.
 
 # 5. Web cache poisoning via an unkeyed query string
+Nhận thấy trong website có một canonical link tag reflect lại domain của wesbite. Thử gửi request `GET /?x=abc`, nhận thấy trong response có header `X-Cache: hit`. Như vậy, query string là một unkeyed field trong cache.
+
+Submit request `GET /?x=abc` đến khi response được lưu vào trong cache. Ta thấy thẻ canonical link trở thành
+```
+<link rel="canonical" href='//0a0100de03c5e4ebc00631e5008b0038.web-security-academy.net/?x=abc'/>
+```
+
+Như vậy, ta có thể escape string và HTML để inject Javascript code. Gửi request `GET /?x='/><script>alert(1)</script>` đến khi response được lưu vào trong cache, kết quả thành công.
 
 # 6. Web cache poisoning via an unkeyed query parameter
 
