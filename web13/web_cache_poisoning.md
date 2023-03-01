@@ -102,6 +102,23 @@ Thử gửi liên tiếp hai request `GET /?utm_content=a` và `GET /?utm_conten
 Gửi request `/?utm_content=b'><script>alert(1)</script>` đến khi response được lưu vào trong cache, kết quả thành công.
 
 # 7. Parameter cloaking
+Trong home page có thẻ script
+```
+<script type="text/javascript" src="/js/geolocate.js?callback=setCountryCookie">
+```
+Truy cập `/js/geolocate.js?callback=setCountryCookie` ta được response như sau
+```
+const setCountryCookie = (country) => { document.cookie = 'country=' + country; };
+const setLangCookie = (lang) => { document.cookie = 'lang=' + lang; };
+setCountryCookie({"country":"United Kingdom"});
+```
+Nhận thấy khi thay đổi query parameter `callback=abc` thì dòng cuối cùng cũng thay đổi thành `abc({"country":"United Kingdom"});`. Như vậy với `callback=alert(1);` thì sẽ có lỗi XSS xảy ra.
+
+Gửi request `GET /js/geolocate.js?callback=setCountryCookie&utm_content=abc` thì cache trả về trạng thái hit. Như vậy query parameter `utm_content` là unkeyed đối với cache. 
+
+Thử gửi request `GET /js/geolocate.js?callback=setCountryCookie&utm_content=abc;callback=test` thì dòng javascript cuối cùng trở thành `test({"country":"United Kingdom"});`. Như vậy, ta có thể sử dụng cách này để thay đổi query parameter `callback` mà vẫn khiến cache hit xảy ra.
+
+Ta exploit parameter cloaking bằng cách cấu hình request `GET /js/geolocate.js?callback=setCountryCookie&utm_content=abc;callback=alert(1);`. Gửi request đến khi response được lưu vào cache, kết quả bài lab được giải.
 
 # 8. Web cache poisoning via a fat GET request
 Trong home page của website có thẻ script 
