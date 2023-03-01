@@ -92,6 +92,14 @@ Submit request `GET /?x=abc` đến khi response được lưu vào trong cache.
 Như vậy, ta có thể escape string và HTML để inject Javascript code. Gửi request `GET /?x='/><script>alert(1)</script>` đến khi response được lưu vào trong cache, kết quả thành công.
 
 # 6. Web cache poisoning via an unkeyed query parameter
+Trong home page có một canonical link giống như bài lab trước. Tuy nhiên, thử với hai request `GET /?x=a` và `GET /?x=b` thì ta nhận thấy cache miss, tức là cache trả về response dựa trên query string.
+
+Thử gửi liên tiếp hai request `GET /?utm_content=a` và `GET /?utm_content=b`, nhận thấy cache hit. Như vậy riêng với query parameter `utm_content` là unkeyed đối với cache. Khi đó canonical link trở thành:
+```
+<link rel="canonical" href='//0a8b007c04c5f667c5f2901d00be00ba.web-security-academy.net/?utm_content=b'/>
+```
+
+Gửi request `/?utm_content=b'><script>alert(1)</script>` đến khi response được lưu vào trong cache, kết quả thành công.
 
 # 7. Parameter cloaking
 
