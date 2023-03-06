@@ -43,6 +43,25 @@ Host: localhost
 Sau khi submit, bài lab được giải.
 
 # 4. Routing-based SSRF
+Dùng Burp Repeater bắt request đến Home page. Thử thay đổi header `Host: j5pxkiye8gmuytdbybbned2em5svgk.oastify.com`, gửi request rồi vào Burp Collaborator Client kiểm tra thì thấy có request được gửi đến. Như vậy ta có thể thực thi SSRF bằng cách thay đổi Host header.
+
+![image](https://user-images.githubusercontent.com/103978452/223042227-5c76ea65-137f-4f82-8738-bf0a0e154300.png)
+
+Gửi request vào Burp Intruder, thực hiện bruteforce với giá trị của Host header từ 192.168.0.0 đến 192.168.0.255, ta thấy chỉ có thể truy cập được nếu giá trị là 192.268.0.113
+
+![image](https://user-images.githubusercontent.com/103978452/223042476-33db1f5d-599b-40a4-ae33-4011c5535214.png)
+
+Dùng Burp Repeater gửi lại request với header `Host: 192.168.0.113`, ta được chuyển hướng đến URL `/admin`. Dựa trên trang đó, ta biết rằng muốn xóa user carlos thì cần gửi POST request đến `/admin/delete`. Như vậy ta cấu hình một request như sau:
+
+```
+POST /admin/delete HTTP/1.1
+Host: 192.168.0.113
+Content-Type: application/x-www-form-urlencoded
+....
+
+csrf=5dcGh6aSE9TEu9v545rRAs7WunnUtpLj&username=carlos
+```
+Sau khi click submit, bài lab được giải.
 
 # 5. SSRF via flawed request parsing
 
