@@ -32,6 +32,15 @@ Submit đến khi response chứa tag script được lưu vào cache. Khi victi
 Như vậy, bài lab được giải thành công.
 
 # 3. Web cache poisoning via ambiguous requests
+Thử vào URL `/admin` thì thấy thông báo "Admin interface only available to local users". 
+
+Bắt request sử dụng Burp Repeater. Khi thay đổi header `Host: localhost` thì ta vẫn có thể truy cập được website, đồng thời "Admin panel" được hiển thị. Từ đó, ta khám phá ra được để delete user carlos thì ta cần gửi request đến `/admin/delete?username=carlos`. Cấu hình request như sau:
+```
+GET /admin/delete?username=carlos HTTP/1.1
+Host: localhost
+....
+```
+Sau khi submit, bài lab được giải.
 
 # 4. Routing-based SSRF
 
