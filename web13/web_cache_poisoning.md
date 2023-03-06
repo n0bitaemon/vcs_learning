@@ -147,7 +147,7 @@ Nhận thấy cache vẫn trả về trạng thái hit. Đợi đến khi cache 
 # 9. URL normalization
 Truy cập một URL ngẫu nhiên, ví dụ `/hello` thì thấy lỗi hiển thị `Not Found: /hello`. Dùng Burp Repeater để bắt request rồi gửi GET request đến `/hello#<script>alert(1)</script>`, ta thấy thẻ script được thêm vào response: `Not Found: /hello#<script>alert(1)</script>`.
 
-Tuy nhiên, do trình duyệt sẽ tự động URL encode các ký tự đặc biệt nên accessvào URL trên bằng browser, lỗi trả ra lại trở thành `Not Found: /hello%23%3Cscript%3Ealert%281%29%3C%2Fscript%3E` và lệnh alert không được thực thi. Nhận thấy sau khi gửi request `/hello#<script>alert(1)</script>`, rồi sau đó gửi tiếp request `/hello?%23%3Cscript%3Ealert%281%29%3C%2Fscript%3E` thì Cache trả về trạng thái hit. Như vậy, cache không coi hai URL có encode và không encode là khác nhau. Ta có thể exploit Cache Poisoning như sau:
+Tuy nhiên, do trình duyệt sẽ tự động URL encode các ký tự đặc biệt nên truy cập vào URL trên bằng browser, các ký tự đặc biệt trong payload của ta sẽ bị encode và không thực thi được. Nhận thấy sau khi gửi request `/hello#<script>alert(1)</script>`, rồi sau đó gửi tiếp request `/hello?%23%3Cscript%3Ealert%281%29%3C%2Fscript%3E` thì Cache trả về trạng thái hit. Như vậy, cache không coi hai URL có encode và không encode là khác nhau. Ta có thể exploit Cache Poisoning như sau:
 
 1) Đầu tiên, gửi request `/hello#<script>alert(1)</script>` bằng Burp Repeater => response chứa tag script được lưu vào trong cache
 2) Do Cache có max-age=10, nên trong 10 giây tiếp theo, ta deliver link `/hello%23%3Cscript%3Ealert%281%29%3C%2Fscript%3E` cho victim. Khi victim truy cập link này, response trả về sẽ nằm trong cache và lệnh `alert(1)` được thực thi 
