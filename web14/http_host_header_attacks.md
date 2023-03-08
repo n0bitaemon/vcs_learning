@@ -66,5 +66,27 @@ Sau khi click submit, bài lab được giải.
 # 5. SSRF via flawed request parsing
 
 # 6. Host validation bypass via connection state attack
+Sử dụng Burp Repeater để bắt request đến Home page. Nhận thấy khi thay đổi header `Host: 192.168.0.1` thì không có response được trả về. Tuy nhiên khi gửi request thông thường (Host header mặc định) trước rồi gửi request với header `Host: 192.168.0.1` thì kết quả lại thành công. Như vậy website đã reuse HTTP connection với Host header được coi là không đổi.
+
+Như vậy, muốn exploit SSRF để truy cập `192.168.0.1` từ server, đầu tiên ta gửi một request với `Host: 0a2900030435075bc284bef4009d00f7.web-security-academy.net` sau đó sẽ gửi các request với header `Host: 192.168.0.1`.
+
+Gửi request sau:
+```
+GET /admin HTTP/2
+Host: 192.168.0.1
+...
+```
+Phân tích response ta biết được để xóa user carlos cần thực hiện request `POST /admin/delete`. Đồng thời, ta cũng thu được csrfToken là `IclUFsBJ1at9lllg0E4Z4y1xd2sddB8k`.
+
+Như vậy, ta cấu hình request sau:
+```
+POST /admin/delete HTTP/2
+Host: 192.168.0.1
+Content-Type: application/x-www-form-urlencoded
+...
+
+username=carlos&csrf=IclUFsBJ1at9lllg0E4Z4y1xd2sddB8k
+```
+Sau khi submit, bài lab được giải thành công.
 
 # 7. Password reset poisoning via dangling markup
