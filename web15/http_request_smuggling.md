@@ -142,7 +142,7 @@ Content-Type: application/x-www-form-urlencoded
 
 G
 ```
-Khi submit request hai lần, ta nhận được message "Not Found", nguyên nhân là do request thứ hai có method là GPOST. Như vậy, website có lỗi HRS.
+Khi submit request hai lần, ta nhận được message "Not Found", nguyên nhân là do website có lỗi HTTP Request Smuggling khiến request thứ hai có method là GPOST.
 
 Tiếp tục, để vào trang `/admin` thì ta cấu hình request sau:
 ```
@@ -157,7 +157,7 @@ Content-Type: application/x-www-form-urlencoded
 GET /admin HTTP/1.1
 Foo: x
 ```
-Sau khi submit 2 lần, ta đã truy cập vào được `/admin`, tuy nhiên response trả về lại là `401 Unauthorized` với message "Admin interface only available to local users". Sau khi thử thêm các header `X-Host`, `X-Forwarded-For`, ... để giả localhost nhưng không thành công, ta sẽ thử thay đổi header `Host`. Tuy nhiên, khi thêm header `Host` vào bên dưới dòng `GET /admin HTTP/1.1` thì sẽ hiển thị lỗi "Duplicate header names are not allowed". 
+Sau khi submit 2 lần, ta đã truy cập vào được `/admin`, tuy nhiên response trả về lại là `401 Unauthorized` với message "Admin interface only available to local users". Sau khi thử thêm các header `X-Host`, `X-Forwarded-For`, ... để giả localhost nhưng không thành công, ta sẽ thử thay đổi header `Host`. Tuy nhiên, khi thêm header `Host: localhost` vào bên dưới dòng `GET /admin HTTP/1.1` thì sẽ hiển thị lỗi "Duplicate header names are not allowed". 
 
 Để khắc phục vấn đề này, ta cấu hình request sau:
 ```
@@ -175,7 +175,7 @@ Content-Length: 10
 
 x=
 ```
-Khi đó, request thứ 2 sẽ có dạng:
+Khi đó, nếu ta submit lần thứ 2 thì request được gửi sẽ trở thành:
 ```
 GET /admin HTTP/1.1
 Host: localhost
