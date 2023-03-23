@@ -698,6 +698,30 @@ Ta dự đoán back-end server sẽ sử dụng 3 internal headers để kiểm 
 Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải thành công.
 
 # 19. Web cache poisoning via HTTP/2 request tunnelling
+Trong request `GET /` thông thường sử dụng HTTP/2, ta dùng Inspector thay đổi request header `:path` với value là:
+```
+/ HTTP/1.1\r\n
+Host: 0a400072037193ecc0e07c9d0058007e.web-security-academy.net\r\n
+\r\n
+search=
+```
+Sau khi submit, response trả về home page, dấu hiệu cho thấy website có lỗ hổng HTTP/2 tunnelling. 
+
+Nhận thấy, với request `GET /resources` thì response trả về có header `Location: /resources/`. Như vậy, request `GET /resources?<script>alert(1)</script>` sẽ rả về response chứa header `Location: /resources/?<script>alert(1)</script>`, nếu đoạn header này xuất hiện trong body của một request khác (sử dụng HTTP/2 tunnelling), thì đoạn script sẽ được execute.
+
+Trở lại với request trước đó, thay đổi request method thành `HEAD` và value của `:path` thành:
+```
+/?cachebuster=1 HTTP/1.1\r\n
+Host: 0a400072037193ecc0e07c9d0058007e.web-security-academy.net\r\n
+\r\n
+GET /resources?<script>alert(1)</script> HTTP/1.1\r\n
+Host: 0a400072037193ecc0e07c9d0058007e.web-security-academy.net\r\n
+\r\n
+x=
+```
+Trong quá trình submit, ta liên tục thay đổi tham số cachebuster để tránh tình trạng nhận được response nằm trong cache. Khi submit thì response trả về `Server Error: Received only 316 of expected 8352 bytes of data`. Nguyên nhân là do response của tunnelled request (`GET /resources?<script>alert(1)</script>`) có độ dài ngắn hơn `Content-Length` của response thứ nhất (`HEAD /?cachebuster=1`). Ta thêm các ký tự `a` vào sau đoạn `<script>alert(1)</script>` đến khi độ dài lớn hơn Content-Length. Sau đó, bỏ parameter `cachebuster=x` và submit để response được lưu vào cache. Kết quả bài lab được giải thành công.
+
+![image](https://user-images.githubusercontent.com/103978452/227144239-9fa103d7-e6df-4d1f-9418-25aceddc7c2e.png)
 
 # 20. Client-side desync
 
