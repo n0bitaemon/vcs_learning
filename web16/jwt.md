@@ -22,6 +22,11 @@ hashcat -a 0 -m 16500 eyJraWQiOiIzNmMzZTQ4OS1mNTNjLTRjNDItYmM0Mi03OWEzNzBmZDJmZD
 Dùng secret key này để thay đổi `"sig": "administrator"`, sau đó gửi request đến `/admin/delete?username=carlos`, kết quả thành công.
 
 # 4. JWT authentication bypass via jwk header injection
+Đăng nhập với credentials wiener: peter. Sử dụng JWT Editor Keys để tạo một RSA Keys mới, sau đó dùng Burp Repeater bắt request tới `/admin`, vào tab "JSON Web Token" để thay đổi giá trị `"sub": "administrator"`. 
+
+Click "Attack" > Click "Embedded JWK" > Chọn RSA key đã tạo rồi click "OK". Sau khi gửi request, ta thấy access trang admin thành công.
+
+Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải.
 
 # 5. JWT authentication bypass via jku header injection
 
