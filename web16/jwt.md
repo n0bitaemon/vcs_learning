@@ -26,6 +26,8 @@ Dùng secret key này để thay đổi `"sig": "administrator"`, sau đó gửi
 
 Click "Attack" > Click "Embedded JWK" > Chọn RSA key đã tạo rồi click "OK". Sau khi gửi request, ta thấy access trang admin thành công.
 
+Sở dĩ chúng ta có thể exploit như vậy vì server đã mặc định lấy object `jwk` trong JWT làm public key, trong khi trường đó có thể bị thay đổi. Như vậy, nếu ta thêm một trường `jwk` để server dùng làm public key, và sử dụng private key tương ứng để sign JWT, thì kết quả verify sẽ trả về hợp lệ.
+
 Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải.
 
 # 5. JWT authentication bypass via jku header injection
