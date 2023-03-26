@@ -57,6 +57,11 @@ Trở lại tab JSON Web Token, click "Sign" để tiến hành signing với RS
 Thay đổi path thành `/admin/delete?username=carlos`, bài lab được giải.
 
 # 6. JWT authentication bypass via kid header path traversal
+Đăng nhập với credentials wiener:peter, sau đó dùng BurpRepeater để bắt request tới `/admin`. Trong tab JSON Web Token, ta sửa tham số kia trong phần header thành `"kid": "../../../../dev/null"`. Tiếp đó, tiến hành thay đổi `"sub": "administrator"` và sign lại JWT với key là một empty string. Sau khi submit, ta access trang admin thành công.
+
+Sở dĩ có thể exploit là vì website dùng tham số "kid" để trỏ tới một static file, và dùng nó để làm key. Khi thay đổi thành `../../../../dev/null`, key sẽ tương ứng một chuỗi rỗng. Như vậy, ta có thể thay đổi JWT theo ý muốn do key đã biết trước.
+
+Đổi path thành `/admin/delete?username=carlos`, bài lab được giải thành công.
 
 # 7. JWT authentication bypass via algorithm confusion
 
