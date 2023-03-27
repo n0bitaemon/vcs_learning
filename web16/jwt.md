@@ -64,5 +64,14 @@ Sở dĩ có thể exploit là vì website dùng tham số "kid" để trỏ t�
 Đổi path thành `/admin/delete?username=carlos`, bài lab được giải thành công.
 
 # 7. JWT authentication bypass via algorithm confusion
+Đăng nhập với credentials wiener:peter. Vào path `/jwks.json`, ta thu được public key của server:
+```
+{"keys":[{"kty":"RSA","e":"AQAB","use":"sig","kid":"17d70d48-e492-4bdc-9974-c3dee02eaf87","alg":"RS256","n":"6X6p2mJ5vaNwfGsQv-75CBTxx2nkdM5ea88nK81NoiZgcAb-sEmaJLIpJRcg4KSLJNoMQ7pp5xXduYHcaDoW_I0m5iC6NwadRfv1D8at5P0r6Wm_t79uomYed7bqU9ia098yRcGgjrG8FNQPPdrtTMHintVzUFgfO6N9xLWCCqD9tpLioTJMNEB6UAJkksv-1ypKS7yVNdgEOdq6PEzdMnKUovAZ4x1GwWNFX7GRYD3K12NOUpuwN31ktecNxzC6aCtnZDd9afRwYaQEx3svTopEJIRGcBXFYDoS0-Vyz6iH2hFZX1PD-4McH7qSwMvzaRhTwromiTA86bNCCMIvLw"}]}
+```
+Ta thực hiện chuyển đổi public key trên từ format JWK sang PEM, sau đó tạo một Symmetric Key với base64 encode của PEM key thu được. Sau đó, đổi header `"ald": "HS256"` và `"sub": "administrator"`. Sau khi submit, nhận thấy access trang `/admin` thành công
+
+Sở dĩ có thể thực hiện tấn công như vậy là vì website đã không validate cẩn thận thuật toán mã hóa, khi ta thay đổi tham số `alg` từ RS256 sang HS256 thì server sẽ nhận public key của RS256 thành secret key của HS256 sau đó dùng key này để mã hóa. Như vậy có nghĩa secret key bị lộ (là public key), và ta thay đổi JWT sau đó dùng secret key để sign JWT, gửi đến server.
+
+Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải.
 
 # 8. JWT authentication bypass via algorithm confusion with no exposed key
