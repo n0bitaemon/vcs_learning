@@ -34,6 +34,20 @@ Gửi request `/?search=x&__proto__[abc]=hello`, sau đó vào tab console nhậ
 Nguyên nhân lệnh alert được execute là vì `config.transport_url` trong trường hợp này có giá trị `undefined`, do đó javascript sẽ tiếp tục tìm lên prototype của nó, đến khi gặp `Object.prototype.transport_url` có giá trị là `data:,alert(1)//` thì nó sẽ dừng lại. Kết quả, một thẻ script có thể thực thi lệnh alert được inject vào website.
 
 # 2. DOM XSS via an alternative prototype pollution vector
+Sử dụng DOM Invader, ta tìm được một source trong home page:
+
+![image](https://user-images.githubusercontent.com/103978452/228148651-65df9309-3148-48a3-be19-5018cab74ac5.png)
+
+Sau khi click "Test", ta thấy với request `GET /?__proto__.testproperty=DOM_INVADER_PP_POC` thì `Object.prototype.testproperty` sẽ trả về giá trị `DOM_INVADER_PP_POC`. Như vậy, đây là một prototype pollution source.
+
+Tiếp tục sử dụng DOM Invader, ta tìm được một sink:
+
+![image](https://user-images.githubusercontent.com/103978452/228149105-bbd2dbbf-0bfb-46b9-b2e9-7af34c790bfb.png)
+
+```
+eval('if(manager && manager.sequence){ manager.macro('+manager.sequence+') }');
+```
+Trong hàm eval có phép nối chuỗi bằng toán từ `+`, như vậy ta hoàn toàn có thể exploit XSS bằng cách cấu hình `manager.sequence=)};alert(1)//`. Như vậy, gửi request `GET /?__proto__.sequence=)};alert(1);//`. Khi đó, `Object.prototype.sequence` sẽ có giá trị là `)};alert(1)//` và khi object manager không có property sequence, nó sẽ tìm ngược lên prototype và lấy giá trị của `Object.prototype.sequence`. Như vậy, lệnh alert được thực thi và bài lab được giải.
 
 # 3. Client-side prototype pollution via flawed sanitization
 
