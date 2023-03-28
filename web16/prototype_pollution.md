@@ -79,6 +79,19 @@ Khối lệnh `if(config.transport_url){ ... }` sẽ kiểm tra `config.transpor
 Như vậy, ta thấy query string là một source và đoạn code tạo tag script chính là sink. Tuy nhiên, website đã chặn prototype pollution attack bằng cách thay thế tất cả từ khóa "constructor", "__proto__", "prototype" bằng chuỗi rỗng. Tuy nhiên, ta có thể dễ dàng bypass bằng cách chèn payload "__pro__proto__to__". Dùng browser truy cập đường dẫn `/?__pro__proto__to__[transport_url]=data:,alert(1)//`, kết quả lệnh alert được thực thi và bài lab được giải.
 
 # 4. Client-side prototype pollution in third-party libraries
+Sử dụng DOM Invader, ta tìm được source:
+
+![image](https://user-images.githubusercontent.com/103978452/228156551-1c4b9b6e-c016-434e-b040-7689a1d6ac51.png)
+
+Click "Test", ta tìm được sink:
+
+![image](https://user-images.githubusercontent.com/103978452/228156684-a08b0834-75ab-4cc6-b1d9-dfc397c38982.png)
+
+Khi click "Exploit", ta biết được với request `/#__proto__[hitCallback]=alert(document.cookie)` thì lệnh `alert(document.cookie)` sẽ được execute. Từ đây, ta vào exploit server cấu hình đoạn script:
+```
+<script>document.location="https://0abe00b1041e29cec0f640de00d600b3.web-security-academy.net/#constructor[prototype][hitCallback]=alert%28document.cookie%29";</script>
+```
+Sau khi click submit, bài lab được giải.
 
 # 5. Client-side prototype pollution via browser APIs
 
