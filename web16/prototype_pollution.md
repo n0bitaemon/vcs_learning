@@ -52,6 +52,29 @@ Trong hàm eval có phép nối chuỗi bằng toán từ `+`, như vậy ta ho�
 Dùng browser gửi request `GET /?__proto__.sequence=)};alert(1);//`. Khi đó, `Object.prototype.sequence` sẽ có giá trị là `)};alert(1)//` và nếu object `manager` không có property `sequence`, nó sẽ tìm ngược lên prototype và lấy giá trị của `Object.prototype.sequence`. Như vậy, lệnh alert được thực thi và bài lab được giải.
 
 # 3. Client-side prototype pollution via flawed sanitization
+Nhận thấy trong file `searchLoggerFiltered.js` có đoạn code sau:
+```
+async function searchLogger() {
+    let config = {params: deparam(new URL(location).searchParams.toString())};
+    if(config.transport_url) {
+        let script = document.createElement('script');
+        script.src = config.transport_url;
+        document.body.appendChild(script);
+    }
+    if(config.params && config.params.search) {
+        await logQuery('/logger', config.params);
+    }
+}
+
+function sanitizeKey(key) {
+    let badProperties = ['constructor','__proto__','prototype'];
+    for(let badProperty of badProperties) {
+        key = key.replaceAll(badProperty, '');
+    }
+    return key;
+}
+```
+Như vậy, ta thấy query string là một source và đoạn code tạo tag script chính là sink. Tuy nhiên, website đã chặn prototype pollution attack bằng cách thay thế tất cả từ khóa "constructor", "__proto__", "prototype" bằng chuỗi rỗng. Tuy nhiên, ta có thể dễ dàng bypass bằng cách chèn payload "__pro__proto__to__". Dùng browser truy cập đường dẫn `/?__pro__proto__to__[transport_url]=data:,alert(1)//`, kết quả lệnh alert được thực thi và bài lab được giải.
 
 # 4. Client-side prototype pollution in third-party libraries
 
