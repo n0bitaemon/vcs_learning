@@ -47,7 +47,9 @@ Tiếp tục sử dụng DOM Invader, ta tìm được một sink:
 ```
 eval('if(manager && manager.sequence){ manager.macro('+manager.sequence+') }');
 ```
-Trong hàm eval có phép nối chuỗi bằng toán từ `+`, như vậy ta hoàn toàn có thể exploit XSS bằng cách cấu hình `manager.sequence=)};alert(1)//`. Như vậy, gửi request `GET /?__proto__.sequence=)};alert(1);//`. Khi đó, `Object.prototype.sequence` sẽ có giá trị là `)};alert(1)//` và khi object manager không có property sequence, nó sẽ tìm ngược lên prototype và lấy giá trị của `Object.prototype.sequence`. Như vậy, lệnh alert được thực thi và bài lab được giải.
+Trong hàm eval có phép nối chuỗi bằng toán từ `+`, như vậy ta hoàn toàn có thể exploit XSS bằng cách cấu hình `manager.sequence=)};alert(1)//`. 
+
+Dùng browser gửi request `GET /?__proto__.sequence=)};alert(1);//`. Khi đó, `Object.prototype.sequence` sẽ có giá trị là `)};alert(1)//` và nếu object `manager` không có property `sequence`, nó sẽ tìm ngược lên prototype và lấy giá trị của `Object.prototype.sequence`. Như vậy, lệnh alert được thực thi và bài lab được giải.
 
 # 3. Client-side prototype pollution via flawed sanitization
 
