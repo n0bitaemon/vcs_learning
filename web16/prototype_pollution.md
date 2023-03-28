@@ -74,6 +74,8 @@ function sanitizeKey(key) {
     return key;
 }
 ```
+Khối lệnh `if(config.transport_url){ ... }` sẽ kiểm tra `config.transport_url`, nếu tìm thấy sẽ tạo thẻ script với thuộc tính src có giá trị là giá trị của `config.transport_url`.
+
 Như vậy, ta thấy query string là một source và đoạn code tạo tag script chính là sink. Tuy nhiên, website đã chặn prototype pollution attack bằng cách thay thế tất cả từ khóa "constructor", "__proto__", "prototype" bằng chuỗi rỗng. Tuy nhiên, ta có thể dễ dàng bypass bằng cách chèn payload "__pro__proto__to__". Dùng browser truy cập đường dẫn `/?__pro__proto__to__[transport_url]=data:,alert(1)//`, kết quả lệnh alert được thực thi và bài lab được giải.
 
 # 4. Client-side prototype pollution in third-party libraries
