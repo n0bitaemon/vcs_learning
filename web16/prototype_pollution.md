@@ -27,9 +27,9 @@ async function searchLogger() {
 
 window.addEventListener("load", searchLogger);
 ```
-Từ đoạn code trên, ta thấy nếu có thể thiết lập giá trị `config.transport_url=data:,alert(1)//` thì sẽ tạo được thẻ script và execute lệnh alert.
+Từ đoạn code trên, ta thấy nếu có thể thiết lập giá trị `config.transport_url=data:,alert(1)//` thì sẽ tạo được thẻ script và execute lệnh alert. Đây có thể trở thành prototype pollution sink.
 
-Gửi request `/?search=x&__proto__[abc]=hello`, sau đó vào tab console nhập `Object.prototype.abc`, ta được giá trị `hello`. Như vậy, chức năng search chính là một prototype pollution source. Ta thay đổi request thành `/?search=x&__proto__[transport_url]=data:,alert(1)//` rồi submit, kết quả bài lab được giải.
+Gửi request `/?search=x&__proto__[abc]=hello`, sau đó vào tab console nhập `Object.prototype.abc`, ta được giá trị `hello`. Như vậy, query string trong home page chính là một prototype pollution source. Ta thay đổi request thành `/?search=x&__proto__[transport_url]=data:,alert(1)//` rồi submit, kết quả bài lab được giải.
 
 Nguyên nhân lệnh alert được execute là vì `config.transport_url` trong trường hợp này có giá trị `undefined`, do đó javascript sẽ tiếp tục tìm lên prototype của nó, đến khi gặp `Object.prototype.transport_url` có giá trị là `data:,alert(1)//` thì nó sẽ dừng lại. Kết quả, một thẻ script có thể thực thi lệnh alert được inject vào website.
 
