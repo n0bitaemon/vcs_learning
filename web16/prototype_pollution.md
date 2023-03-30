@@ -124,7 +124,12 @@ Nhận thấy, khi submit với tham số `country` không hợp lệ, response 
     "postcode":"BU1 1RP",
     "country":"UK",
     "sessionId":"cgYDvt1jgVprQ1RMlbmtAwUCj6qLCfeK",
-    "__proto__":{"__proto__":{"status":599}
+    "__proto__":
+    {
+        "__proto__":
+        {
+            "status":599
+        }
     }
 }
 ```
