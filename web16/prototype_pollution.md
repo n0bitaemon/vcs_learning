@@ -211,7 +211,7 @@ sau đó, click "Run maintainance jobs" (dự đoán website sẽ tạo subproce
     }
 }
 ```
-Request trên sẽ cấu hình các biến số cho subprocess được tạo ra bởi `child_process` module, khiến cho lệnh `require('fs')` và `fs.unlinkSync('/home/carlos/morale')` được thực hiện. Sau khi submit và click "Run maintainance jobs", bài lab được giải.
+Request trên sẽ cấu hình các biến số cho subprocess bằng method `child_process.fork()`, khiến cho lệnh `require('fs')` và `fs.unlinkSync('/home/carlos/morale')` được thực hiện. Sau khi submit và click "Run maintainance jobs", bài lab được giải.
 
 # 10. Exfiltrating sensitive data via server-side prototype pollution
 
