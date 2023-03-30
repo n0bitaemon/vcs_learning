@@ -106,8 +106,11 @@ if(config.transport_url) {
 }
 ```
 Nhận thấy:
+
 +) Đoạn code trên sử dụng hàm `Object.defineProperty` để định nghĩa các descriptor cho trường `transport_url`
+
 +) Giá trị của `transport_url` sẽ được đặt làm thuộc tính `src` của tag script
+
 Như vậy, ta có thể exploit prototype pollution bằng cách định nghĩa thuộc tính `value` của `Object.prototype`, vì hàm trên sẽ tìm đến thuộc tính này khi giá trị `value` không được khai báo.
 
 Từ browser, truy cập `/?__proto__[value]=data%3A%2Calert%281%29`, lệnh alert được execute và bài lab được giải.
