@@ -111,9 +111,9 @@ Nhận thấy:
 
 +) Giá trị của `transport_url` sẽ được đặt làm thuộc tính `src` của tag script
 
-Như vậy, ta có thể exploit prototype pollution bằng cách định nghĩa thuộc tính `value` của `Object.prototype`, vì hàm trên sẽ tìm đến thuộc tính này khi giá trị `value` không được khai báo.
+Hàm `Object.prototype` nhận vào một object các descriptors, trong đó có `value`. Nếu `value` không được trong khai báo, thì mặc định hàm này sẽ lấy giá trị của `Object.prototype.value` để thay thế. Như vậy, ta có thể exploit prototype pollution bằng cách ghi đè lên thuộc tính `value` của `Object.prototype`.
 
-Từ browser, truy cập `/?__proto__[value]=data%3A%2Calert%281%29`, lệnh alert được execute và bài lab được giải.
+Từ browser, truy cập `/?__proto__[value]=data:,alert(1)//`, lệnh alert được execute và bài lab được giải.
 
 # 6. Privilege escalation via server-side prototype pollution
 Đăng nhập với credentials wiener:peter, ta thấy request `POST /my-account/change-address` nhận vào một chuỗi JSON và cũng trả về một chuỗi JSON trong response, trong đó có reflect dữ liệu đầu vào.
