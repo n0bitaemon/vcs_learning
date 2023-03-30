@@ -94,6 +94,23 @@ Khi click "Exploit", ta biết được với request `/#__proto__[hitCallback]=
 Sau khi click submit, bài lab được giải.
 
 # 5. Client-side prototype pollution via browser APIs
+Thử gửi request `/?__proto__[name]=abc`, sau đó vào console window in ra kết quả quả `Object.prototype.name`, ta được chuỗi `abc`. Như vậy query string trong home page là một prototype pollution sourrce.
+
+Nhận thấy trong file `searchLoggerConfigurable.js` có đoạn code sau:
+```
+Object.defineProperty(config, 'transport_url', {configurable: false, writable: false});
+if(config.transport_url) {
+    let script = document.createElement('script');
+    script.src = config.transport_url;
+    document.body.appendChild(script);
+}
+```
+Nhận thấy:
++) Đoạn code trên sử dụng hàm `Object.defineProperty` để định nghĩa các descriptor cho trường `transport_url`
++) Giá trị của `transport_url` sẽ được đặt làm thuộc tính `src` của tag script
+Như vậy, ta có thể exploit prototype pollution bằng cách định nghĩa thuộc tính `value` của `Object.prototype`, vì hàm trên sẽ tìm đến thuộc tính này khi giá trị `value` không được khai báo.
+
+Từ browser, truy cập `/?__proto__[value]=data%3A%2Calert%281%29`, lệnh alert được execute và bài lab được giải.
 
 # 6. Privilege escalation via server-side prototype pollution
 Đăng nhập với credentials wiener:peter, ta thấy request `POST /my-account/change-address` nhận vào một chuỗi JSON và cũng trả về một chuỗi JSON trong response, trong đó có reflect dữ liệu đầu vào.
