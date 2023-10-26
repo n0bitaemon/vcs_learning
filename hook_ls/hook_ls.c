@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define FILENAME "secret.txt"
+#define FILENAME "trietnm.txt"
 
 int count = 0;
 
